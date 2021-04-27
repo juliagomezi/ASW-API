@@ -1,4 +1,4 @@
 release: python manage.py makemigrations --no-input
 release: python manage.py migrate --no-input
 
-web: gunicorn project.wsgi --log-file -
+web: gunicorn apihackerbadnews.wsgi --log-file -
