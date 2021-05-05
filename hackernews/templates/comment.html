@@ -1,0 +1,60 @@
+{% extends "item.html" %}
+
+{% block comment %}
+    <tbody>
+        <tr>
+            <td class="ind">
+                <img src="s.gif" height="1" width="0">
+            </td>
+            {% if user.username == comment.author.username %}
+                <td valign="top" class="votelinks">
+                    <center>
+                        <font color="#ff6600">*</font>
+                        <br>
+                        <img src="s.gif" height="1" width="14">
+                    </center>
+                </td>
+            {% elif user.is_authenticated and votedcomments|in_category2:comment %}
+                <td valign="top" class="votelinks">
+                    <center>
+                        <br>
+                        <img src="s.gif" height="1" width="14">
+                    </center>
+                </td>
+            {% else %}
+                <form method="POST" action="/votecomment/">
+                    {% csrf_token %}
+                    <td valign="top" class="votelinks">
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <button type="submit" class='votearrow' title='upvote' name='id' value={{ comment.id }}></button>
+                    </td>
+                </form>
+            {% endif %}
+            <td class="default">
+                <div style="margin-top:2px; margin-bottom:-10px;">
+                    <span class="comhead">
+                        <a href="{% url 'user' %}?id={{ comment.author }}" class="hnuser">{{ comment.author }}</a>
+                        <span class="age"><a href=""> {{ comment.date }} </a></span> 
+                        {% if user.is_authenticated and votedcomments|in_category2:comment %}
+                           | <a href="{% url 'unvotecomment' id=comment.id %}?next={{ request.path }}">unvote</a>
+                        {% endif %}
+                        <span class="par"></span>
+                        <span class="storyon"></span>
+                    </span>
+                </div>
+                <br>
+                <div class="comment">
+                    <span class="commtext c00"> {{ comment.text }}
+                    <div class="reply">
+                        <p>
+                            <font size="1">
+                                <u><a href="{% url 'reply' comment.id %}">reply</a></u>
+                            </font>
+                        </p>
+                    </div>
+                    </span>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+{% endblock %}

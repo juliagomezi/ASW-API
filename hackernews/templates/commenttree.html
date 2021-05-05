@@ -1,0 +1,86 @@
+{% extends "layout.html" %}
+
+{% block item %}
+
+{% for comment in comments %}
+<table border="0" class="comment-tree">
+    <tbody>
+        <tr class="athing comtr" id="26690474">
+            <td>
+                <div class="round" style="--margin: {{ comment.level }}px;">
+                    <style>
+                        .round {
+                            margin-left: calc(40 * var(--margin));
+                        }
+                    </style>
+                    <table border= "0">
+                    <tbody>
+        <tr>
+            <td class="ind">
+                <img src="s.gif" height="1" width="0">
+            </td>
+            {% if user.username == comment.author.username %}
+                <td valign="top" class="votelinks">
+                    <center>
+                        <font color="#ff6600">*</font>
+                        <br>
+                        <img src="s.gif" height="1" width="14">
+                    </center>
+                </td>
+            {% elif user.is_authenticated and votedcomments|in_category2:comment %}
+                <td valign="top" class="votelinks">
+                    <center>
+                        <br>
+                        <img src="s.gif" height="1" width="14">
+                    </center>
+                </td>
+            {% else %}
+                <form method="POST" action="/votecomment/">
+                    {% csrf_token %}
+                    <td valign="top" class="votelinks">
+                        {% if request.path == "/submission" or request.path == "/threads" %}
+                            <input type="hidden" name="next" value="{{ request.path }}?id={{ actualuser }}">
+                        {% else %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                        {% endif %}
+                        <button type="submit" class='votearrow' title='upvote' name='id' value={{ comment.id }}></button>
+                    </td>
+                </form>
+            {% endif %}
+            <td class="default">
+                <div style="margin-top:2px; margin-bottom:-10px;">
+                    <span class="comhead">
+                        <a href="{% url 'user' %}?id={{ comment.author }}" class="hnuser">{{ comment.author }}</a>
+                        <span class="age"><a href=""> {{ comment.get_date }} </a></span>
+                        {% if user.is_authenticated and votedcomments|in_category2:comment %}
+                           | <a href="{% url 'unvotecomment' id=comment.id %}?next={{ request.path }}?id={{ actualuser }}">unvote</a>
+                        {% endif %}
+                        <span>| on: <a href="{% url 'item' comment.contribution.id %}">{{ comment.contribution.title }}</a></span>
+                        <span class="par"></span>
+                        <span class="storyon"></span>
+                    </span>
+                </div>
+                <br>
+                <div class="comment">
+                    <span class="commtext c00"> {{ comment.text }}
+                    <div class="reply">
+                        <p>
+                            <font size="1">
+                                <u><a href="{% url 'reply' comment.id %}">reply</a></u>
+                            </font>
+                        </p>
+                    </div>
+                    </span>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% endfor %}
+
+{% endblock %}

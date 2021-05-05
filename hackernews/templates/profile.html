@@ -1,0 +1,169 @@
+{% extends "layout.html" %}
+
+{% block item %}
+    <center>
+        <table id="hnmain" border="0" cellpadding="0" cellspacing="0" width="85%" bgcolor="#f6f6ef">
+            {% if user.username != profile.username %}
+                </table></td></tr>
+                <tr id="pagespace" title="Profile: {{ profile.username }}" style="height:10px"></tr>
+                <tr>
+                    <td>
+                        <table border="0">
+                            <tr class='athing'>
+                                <td valign="top">user:</td>
+                                <td><a href="{% url 'user' %}?id={{ profile.username }}" class="hnuser">{{ profile.username }}</a></td>
+                            </tr>
+                            <tr>
+                                <td valign="top">created:</td>
+                                <td><a>{{ profileDetails.get_date }}</a></td>
+                            </tr>
+                            <tr>
+                                <td valign="top">karma:</td>
+                                <td>
+                                    {{ profileDetails.karma }}
+                                </td>
+                            </tr>
+                            <tr>
+                                <td valign="top">about:</td>
+                                <td style="overflow:hidden;">
+                                    {{ profileDetails.about }}
+                                </td>
+                            </tr>
+                            <tr>
+                                    <td></td>
+                                    <td>
+                                        <a href="{% url 'submission' %}?id={{ profile.username }}"><u>submissions</u></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td><a href="{% url 'threads' %}?id={{ profile.username }}"><u>comments</u></a></td>
+                                </tr>
+                        </table>
+                        <br><br>
+                    </td>
+                </tr>
+                </table>
+            {% else %}
+                <tbody>
+                <tr id="pagespace" title="Profile" style="height:10px"></tr>
+                <tr>
+                    <td>
+                        {% if user.email == None %}
+                            <table border="0" cellpadding="0" cellspacing="0">
+                                <tbody>
+                                <tr>
+                                    <td bgcolor="#ffffaa">
+                                        <table cellpadding="5" width="100%">
+                                            <tbody>
+                                            <tr>
+                                                <td>Please put a valid address in the email field, or we won't be able
+                                                    to
+                                                    send you a new password if you forget yours. Your address is only
+                                                    visible to you and us. Crawlers and other users can't see it.
+                                                </td>
+                                            </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        {% endif %}
+                        <form class="profileform" method="post" action="{% url 'user' %}?id={{ profile.username }}">
+                            {% csrf_token %}
+                            <table border="0">
+                                <tbody>
+                                <tr class="athing">
+                                    <td valign="top">user:</td>
+                                    <td><a href="{% url 'user' %}?id={{ profile.username }}"
+                                           class="hnuser"><font color="#3c963c">{{ profile.username }}</font></a></td>
+                                </tr>
+                                <tr>
+                                    <td valign="top">created:</td>
+                                    <td><a>{{ profileDetails.get_date }}</a></td>
+                                </tr>
+                                <tr>
+                                    <td valign="top">karma:</td>
+                                    <td>{{ profileDetails.karma }}</td>
+                                </tr>
+                                <tr>
+                                    <td valign="top">about:</td>
+                                    <td style="overflow:hidden;">
+                                        {{ form.about|default_if_none:"" }}
+                                            <font size="-2"><a href="https://news.ycombinator.com/formatdoc" tabindex="-1"><font
+                                                    color="#afafaf">help</font></a></font>
+                                    </td>
+                                </tr>
+                                    <tr>
+                                        <td valign="top">email:</td>
+                                        <td>
+                                            {% if user.email != None %}
+                                                {{ user.email }}
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td valign="top">showdead:</td>
+                                        <td>
+                                            <label>
+                                                {{form.show_dead}}
+                                            </label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td valign="top">noprocrast:</td>
+                                        <td>
+                                            {{form.no_procrast}}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td valign="top">maxvisit:</td>
+                                        <td>
+                                            {{ form.max_visit }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td valign="top">minaway:</td>
+                                        <td>
+                                            {{ form.min_away }}
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td valign="top">delay:</td>
+                                        <td>
+                                            {{ form.delay }}
+                                        </td>
+                                    </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>
+                                        <a href="{% url 'submission' %}?id={{ profile.username }}"><u>submissions</u></a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td><a href="{% url 'threads' %}?id={{ profile.username }}"><u>comments</u></a></td>
+                                </tr>
+                                    <tr>
+                                        <td></td>
+                                        <td>
+                                            <a href="{% url 'favourites' %}?id={{ profile.username }}"><u>favorite
+                                                submissions</u></a> /
+                                            <a href="{% url 'comments' %}?id={{ profile.username }}"><u>comments</u></a>
+                                            &nbsp;<span style="font-style:italic">(private)</span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <br>
+                                <input type="submit" value="update">
+                        </form>
+                        <br><br>
+                    </td>
+                </tr>
+                </tbody>
+                </table>
+            {% endif %}
+    </center>
+{% endblock %}

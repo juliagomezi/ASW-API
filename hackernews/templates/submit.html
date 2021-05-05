@@ -1,0 +1,80 @@
+<html lang="en" op="submit">
+<head>
+    <link rel="shortcut icon" href="/static/y18.gif">
+    <link rel="stylesheet" type="text/css" href="/static/css/styles.css">
+    <title>Submit | Hacker News</title>
+</head>
+<body>
+<center>
+    <table id="hnmain" border="0" cellpadding="0" cellspacing="0" width="85%" bgcolor="#f6f6ef">
+        <tr>
+            <td bgcolor="#ff6600">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:2px">
+                    <tr>
+                        <td style="width:18px;padding-right:4px">
+                            <a href="{% url 'index' %}">
+                                <img src="/static/y18.gif" width="18" height="18" style="border:1px #ffffff solid;">
+                            </a>
+                        </td>
+                        <td style="line-height:12pt; height:10px;">
+                                    <span class="pagetop">
+                                        <b>Submit</b>
+                                    </span>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr id="pagespace" Submit style="height:10px"></tr>
+        <tr>
+            <td>
+                <form method="post">
+                    {% csrf_token %}
+
+                    <table border="0">
+                        <tr>
+                            <td>title</td>
+                            <td>
+                                {{ form.title.errors }}
+                                {{ form.title }}
+                                <span style="margin-left:10px"></span>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>url</td>
+                            <td>
+                                {{ form.url.errors }}
+                                {{ form.url }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <b>or</b>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td>text</td>
+                            <td>
+                                {{ form.text.errors }}
+                                {{ form.text }}
+                            </td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td>
+                                <input type="submit" value="submit">
+                            </td>
+                        </tr>
+                    </table>
+                </form>
+            </td>
+        </tr>
+    </table>
+</center>
+</body>   
+</html>

@@ -1,0 +1,21 @@
+{% load socialaccount %}
+<html lang="en" op="news">
+<head>
+    <meta name="referrer" content="origin">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="/static/y18.gif">
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="rss">
+    <title>Login | Hacker News</title>
+</head>
+<html lang="en">
+	<head>
+		<meta name="referrer" content="origin">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<link rel="shortcut icon" href="favicon.ico">
+	</head>
+	<body>
+		<b>Login</b>
+		<br><br>
+		<a href="{% provider_login_url 'google' %}?next={% url 'createuser' %}">Login with Google</a>
+	</body>
+</html>

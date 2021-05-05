@@ -1,0 +1,129 @@
+<html lang="en" op="news">
+<head>
+    <meta name="referrer" content="origin">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/static/styles.css">
+    <link rel="shortcut icon" href="/static/y18.gif">
+    <link rel="alternate" type="application/rss+xml" title="RSS" href="rss">
+    <title>Hacker News</title>
+</head>
+<body>
+<center>
+    <table id="hnmain" border="0" cellpadding="0" cellspacing="0" width="85%" bgcolor="#f6f6ef">
+        <!-- inici capçalera taronja -->
+        <tr>
+            <td bgcolor="#ff6600">
+                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="padding:2px">
+                    <tr>
+                        <td style="width:18px;padding-right:4px">
+                            <a href="{% url 'index' %}">
+                                <img src="/static/y18.gif" width="18" height="18" style="border:1px white solid;">
+                            </a>
+                        </td>
+                        {% if submit %}
+                            <td style="line-height:12pt; height:10px;">
+                                    <span class="pagetop">
+                                        <b class="hnname">
+                                            <a>Submit</a>
+                                        </b>
+                                    </span>
+                            </td>
+                        {% elif reply %}
+                            <td style="line-height:12pt; height:10px;">
+                                    <span class="pagetop">
+                                        <b class="hnname">
+                                            <a>Add Comment</a>
+                                        </b>
+                                    </span>
+                            </td>
+                        {% else %}
+                            <td style="line-height:12pt; height:10px;">
+                                    <span class="pagetop">
+                                        <b class="hnname">
+                                            <a href="{% url 'index' %}">Hacker News</a>
+                                        </b>
+                                        {% if selected == "newest" %}
+                                            <span class="topsel"><a href="{% url 'newest' %}">new</a></span>{% else %}
+                                            <a href="{% url 'newest' %}">new</a>{% endif %}
+                                        |
+                                        {% if user.is_authenticated %}
+                                            {%if selected == "threads" %}<span class="topsel"><a
+                                                href="{% url 'threads' %}?id={{ user.username }}">threads</a></span>{% else %}
+                                            <a href="{% url 'threads' %}?id={{ user.username }}">threads</a>{% endif %}
+                                        | {% endif %}
+                                        {% if selected == "ask" %}
+                                            <span class="topsel"><a href="{% url 'ask' %}">ask</a></span>{% else %}
+                                            <a href="{% url 'ask' %}">ask</a>{% endif %}
+                                        |
+                                        <a href="{% url 'submit' %}">submit</a>
+
+                                    </span>
+                            </td>
+                            <td style="text-align:right;padding-right:4px;">
+                                <span class="pagetop">
+                                {% if user.is_authenticated %}
+                                    <a id="me" href="{% url 'user' %}?id={{ user.username }}">{{ user.username }}</a>
+                                    ({{ karma }}) |
+                                    <a href="{% url 'logout' %}">logout</a>
+                                {% else %}
+                                    <a href="{% url 'login' %}">login</a>
+                                {% endif %}
+                            </td>
+                        {% endif %}
+                        </span>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- fi capçalera taronja -->
+        <tr id="pagespace" title="" style="height:10px"></tr>
+        <tr>
+            <td>
+                <table border="0" cellpadding="0" cellspacing="0" class="itemlist">
+                    <!--inici dels articles-->
+                    {% block item %}
+                    {% endblock %}
+                    <!--fi dels articles-->
+                </table>
+            </td>
+        </tr>
+        {% if bottom %}
+            <tr>
+                <td>
+                    <img src="/static/s.gif" height="10" width="0">
+                    <table width="100%" cellspacing="0" cellpadding="1">
+                        <tr>
+                            <td bgcolor="#ff6600"></td>
+                        </tr>
+                    </table>
+                    <br>
+                    <center><a href="">Applications are open for YC Summer 2021</a></center>
+                    <br>
+                    <center>
+                            <span class="yclinks">
+                                <a href="">Guidelines</a>
+                                | <a href="">FAQ</a>
+                                | <a href="">Lists</a>
+                                | <a href="">API</a>
+                                | <a href="">Security</a>
+                                | <a href="">Legal</a>
+                                | <a href="">Apply to YC</a>
+                                | <a href="">Contact</a>
+                            </span>
+                        <br>
+                        <br>
+                        <form method="get" action="//hn.algolia.com/">Search: <input type="text" name="q" value=""
+                                                                                     size="17"
+                                                                                     autocorrect="off"
+                                                                                     spellcheck="false"
+                                                                                     autocapitalize="off"
+                                                                                     autocomplete="false"></form>
+                    </center>
+                </td>
+            </tr>
+        {% endif %}
+    </table>
+</center>
+</body>
+</html>

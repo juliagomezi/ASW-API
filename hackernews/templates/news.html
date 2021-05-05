@@ -1,0 +1,79 @@
+{% extends "layout.html" %}
+
+{% block item %}
+
+    {% for contribution in contributions %}
+    <tr class='athing' id={{ contribution.id }}>
+        <td align="right" valign="top" class="title">
+            <span class="rank">{{ forloop.counter }}.</span>
+        </td>
+        {% if user.username == contribution.author.username %}
+            <td valign="top" class="votelinks">
+                <center>
+                    <font color="#ff6600">*</font>
+                    <br>
+                    <img src="s.gif" height="1" width="14">
+                </center>
+            </td>
+        {% elif user.is_authenticated and votes|in_category:contribution %}
+             <td valign="top" class="votelinks">
+                <center>
+                    <br>
+                    <img src="s.gif" height="1" width="14">
+                </center>
+            </td>
+        {% else %}
+            <form method="POST" action="/vote/">
+                {% csrf_token %}
+                <td valign="top" class="votelinks">
+                    {% if request.path == "/submission" %}
+                            <input type="hidden" name="next" value="{{ request.path }}?id={{ actualuser }}">
+                    {% else %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                    {% endif %}
+                    <button type="submit" class='votearrow' title='upvote' name='id' value={{ contribution.id }}></button>
+                </td>
+            </form>
+        {% endif %}
+        <td class="title">
+            {% if contribution.type == "url" %}
+                <a href={{ contribution.url }} class="storylink">{{ contribution.title }} </a>
+            {% else %}
+                <a href="{% url 'item' contribution.id %}" class="storylink">{{ contribution.title }} </a>
+            {% endif %}
+            {% if contribution.type == "url" %}
+                <span class="sitebit comhead"> 
+                    (<a href={{ contribution.url }}><span class="sitestr">{{ contribution.url }}</span></a>)
+                </span>
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <td colspan="2"></td>
+        <td class="subtext">
+            <span class="score" id="score_26521582">{{ contribution.points }} points</span> by <a href="{% url 'user' %}?id={{ contribution.author.username }}" class="hnuser">{{ contribution.author }}</a> 
+            <span class="age"><a href="">{{ contribution.get_date }}</a></span> |
+            {% if user.is_authenticated and votes|in_category:contribution %}
+                {% if request.path == "/favourites" or request.path == "/submission" %}
+                    <a href="{% url 'unvote' id=contribution.id %}?next={{ request.path }}?id={{ actualuser }}">unvote</a> |
+                {% else %}
+                    <a href="{% url 'unvote' id=contribution.id %}?next={{ request.path }}">unvote</a> |
+                {% endif %}
+            {% endif %}
+            <a href="{% url 'item' contribution.id %}">
+            {% if contribution.comments.count == 0 %}
+                discuss
+            {% else %}
+                {{ contribution.comments.count }} comments
+            {% endif %}
+            </a>             
+        </td>
+    </tr>
+    <tr class="spacer" style="height:5px"></tr>
+    {% endfor %}
+	<tr class="morespace" style="height:10px"></tr><tr>
+		<td colspan="2"></td>
+		</td>
+	</tr>
+    
+{% endblock %}

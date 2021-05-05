@@ -1,0 +1,109 @@
+{% extends "layout.html" %}
+
+{% block item %}
+
+<table class="fatitem">
+    <tbody>
+        <tr class="athing" id="26690126">
+            <td textalign="right" valign="top" class="title">
+                <span class="rank"></span>
+            </td>      
+            {% if user.username == contribution.author.username %}
+            <td valign="top" class="votelinks">
+                <center>
+                    <font color="#ff6600">*</font>
+                    <br>
+                    <img src="s.gif" height="1" width="14">
+                </center>
+            </td>
+            {% elif user.is_authenticated and voted %}
+                <td valign="top" class="votelinks">
+                    <center>
+                        <br>
+                        <img src="s.gif" height="1" width="14">
+                    </center>
+                </td>
+            {% else %}
+                <form method="POST" action="/vote/">
+                    {% csrf_token %}
+                    <td valign="top" class="votelinks">
+                        <input type="hidden" name="next" value="{{ request.path }}">
+                        <button type="submit" class='votearrow' title='upvote' name='id' value={{ contribution.id }}></button>
+                    </td>
+                </form>
+            {% endif %}
+            <td class="title">
+                {% if contribution.type == "url" %}
+                    <a href={{ contribution.url }} class="storylink">{{ contribution.title }} </a>
+                {% else %}
+                    <a href="" class="storylink">{{ contribution.title }} </a>
+                {% endif %}
+                <span class="sitebit comhead">
+                {% if contribution.type == "url" %}
+                    (<a href={{ contribution.url }}><span class="sitestr">{{ contribution.url }}</span></a>)
+                {% endif %}
+                </span>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2"></td><td class="subtext">
+                <span class="score" id="score_26690126">{{ contribution.points }} points</span> by <a href="{% url 'user' %}?id={{ contribution.author }}" class="hnuser">{{ contribution.author }}</a>
+                <span class="age"><a href="">{{ contribution.date }}</a></span> |
+                {% if user.is_authenticated and voted %}
+                    <a href="{% url 'unvote' id=contribution.id %}?next={{ request.path }}">unvote</a> |
+                {% endif %}
+                <a href="">
+                    {% if contribution.comments.count == 0 %}
+                        discuss
+                    {% else %}
+                        {{ contribution.comments.count }} comments
+                    {% endif %}
+                </a>              
+            </td>
+        </tr>
+        {% if contribution.type == "ask" %}
+            <tr>
+                <td colspan="2"></td>
+                <td>{{ contribution.text }}</td>
+            </tr>
+        {% endif %}
+        <tr style="height:10px"></tr>
+        <tr><td colspan="2"></td>
+            <td>
+                <form method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="contribution" value={{ contribution.id }}>
+                    <input type="hidden" name="level" value='0'>
+                    <textarea name="text" rows="6" cols="60" required=true></textarea>
+                    <br><br><input type="submit" value="add comment">
+                </form>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<!-- comments -->
+
+{% for comment in comments %}
+<table border="0" class="comment-tree">
+    <tbody>
+        <tr class="athing comtr" id="26690474">
+            <td>
+                <div class="round" style="--margin: {{ comment.level }}px;">
+                    <style>
+                        .round {
+                            margin-left: calc(40 * var(--margin));
+                        }
+                    </style>
+                    <table border= "0">
+                    {% block comment %}
+                    {% endblock %}
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </tbody>
+</table>
+{% endfor %}
+
+{% endblock %}
