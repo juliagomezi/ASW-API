@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'hackernews.apps.HackernewsConfig',
     'rest_framework',
     'rest_framework.authtoken',
+    'rest_framework_api_key',
 
     'allauth',  # <--
     'allauth.account',  # <--
