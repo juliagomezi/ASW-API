@@ -6,6 +6,7 @@ from django.shortcuts import render, redirect
 from django.template.defaultfilters import register
 
 from django.views.generic import TemplateView
+from rest_framework.authtoken.models import Token
 
 from hackernews.models import Comment, Contribution, UserDetail, SubmitForm, ContributionVote, CommentVote, DetailForm
 
@@ -161,6 +162,7 @@ def profile(request):
     username = request.GET.get('id')
     user = User.objects.get(username=username)
     userDetail = UserDetail.objects.get(user=user)
+    key = Token.objects.get(user=user).key
 
     if request.method == 'POST':
         if request.user.is_authenticated:
@@ -181,7 +183,8 @@ def profile(request):
         "submit": False,
         "karma": karma,
         "form": form,
-        "bottom": False
+        "bottom": False,
+        "key": key
     })
 
 
@@ -364,7 +367,9 @@ class LoginView(TemplateView):
 def createuser(request):
     if not UserDetail.objects.filter(user=request.user).exists():
         userDetails = UserDetail(user=request.user)
+        Token.objects.create(user=request.user)
         userDetails.save()
+
     return redirect('/')
 
 
