@@ -1,16 +1,17 @@
-from datetime import datetime
-
 from django.contrib.auth import logout, authenticate, login
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.contrib.auth.models import User
 from django.shortcuts import render, redirect
 from django.template.defaultfilters import register
-
 from django.views.generic import TemplateView
+from rest_framework import status
 from rest_framework.authtoken.models import Token
+from rest_framework.decorators import api_view
+from rest_framework.parsers import JSONParser
+from rest_framework.response import Response
 
 from hackernews.models import Comment, Contribution, UserDetail, SubmitForm, ContributionVote, CommentVote, DetailForm
-
-from django.contrib.auth.models import User
+from hackernews.serializers import UserSerializer, DetailSerializer
 
 
 def vote(request):
@@ -156,6 +157,57 @@ def ask(request):
         "bottom": True,
         "karma": get_karma(request)
     })
+
+
+@api_view(['GET', 'PUT'])
+def profile_api(request):
+    client_id = request.GET.get("id", None)
+
+    if client_id is None:
+        return Response({
+            "id": ["This field is required."]
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    token = request.META.get('HTTP_AUTHORIZATION')
+
+    if token is None:
+        return Response({
+            "authentication": ["This field is required."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        auth = Token.objects.get(key=token)
+    except Token.DoesNotExist:
+        return Response({
+            "authentication": ["This key is invalid."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        username = request.GET.get('id')
+        #user = User.objects.select_related('userdetail').get(username=username)
+        user = User.objects.get(username=username)
+        userDetail = UserDetail.objects.get(user=user)
+
+        if request.method == 'PUT':
+            if auth.user != user:
+                return Response({
+                    "Unauthorized": ["You're not allowed to modify this profile."]
+                }, status=status.HTTP_401_UNAUTHORIZED)
+
+            data = JSONParser().parse(request)
+            serializer = UserSerializer(data=data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+        elif request.method == 'GET':
+            serializer = DetailSerializer(userDetail)
+            return Response(serializer.data)
+
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 def profile(request):

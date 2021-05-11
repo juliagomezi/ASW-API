@@ -3,6 +3,14 @@ from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
+
+    path('api/users', views.profile_api, name='profile'),
+    path('api/submissions/<int:id>/', views.newest, name='newest'),
+    path('api/submissions/', views.newest, name='newest'),
+    path('api/replies/<int:id>/vote', views.newest, name='newest'),
+    path('api/replies/<int:id>/comment', views.newest, name='newest'),
+    path('api/replies/<int:id>/', views.newest, name='newest'),
+    path('api/replies/', views.newest, name='newest'),
     path('newest/', views.newest, name='newest'),
     path('threads', views.threads, name='threads'),
     path('ask/', views.ask, name='ask'),
