@@ -196,3 +196,45 @@ class UserDTO(models.Model):
         self.karma = karma
         self.about = about
         self.created = created
+
+
+class ContributionCreationDTO(models.Model):
+    title = models.CharField(max_length=200)
+    url = models.CharField(max_length=200, blank=True)
+    text = models.CharField(max_length=200, blank=True)
+
+    def __init__(self, title, url, text, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.title = title
+        self.url = url
+        self.text = text
+
+
+class ContributionDTO(models.Model):
+    URL = 'url'
+    ASK = 'ask'
+    CHOICES = [
+        (URL, 'url'),
+        (ASK, 'ask')
+    ]
+    type = models.CharField(
+        max_length=3,
+        choices=CHOICES,
+        default='url')
+    id = models.IntegerField(primary_key=True)
+    title = models.CharField(max_length=200)
+    url = models.CharField(max_length=200, blank=True)
+    text = models.CharField(max_length=200, blank=True)
+    date = models.DateTimeField(default=datetime.now, blank=True)
+    points = models.IntegerField(default=1)
+    author = models.CharField(max_length=200)
+
+    def __init__(self, id, type, points, author, url, text, date, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.type = type
+        self.id = id
+        self.url = url
+        self.text = text
+        self.date = date
+        self.points = points
+        self.author = author

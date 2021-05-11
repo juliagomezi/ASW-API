@@ -11,8 +11,8 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 
 from hackernews.models import Comment, Contribution, UserDetail, SubmitForm, ContributionVote, CommentVote, DetailForm, \
-    UserDTO
-from hackernews.serializers import UserSerializer, DetailSerializer, UserDTOSerializer
+    UserDTO, ContributionDTO
+from hackernews.serializers import UserDTOSerializer, ContributionDTOSerializer, ContributionCreationDTOSerializer
 
 
 def vote(request):
@@ -160,21 +160,109 @@ def ask(request):
     })
 
 
-@api_view(['GET', 'PUT'])
-def profile_api(request):
-    client_id = request.GET.get("id", None)
-
-    if client_id is None:
-        return Response({
-            "id": ["This field is required."]
-        }, status=status.HTTP_400_BAD_REQUEST)
-
+@api_view(['GET', 'POST'])
+def submissions_api(request):
     token = request.META.get('HTTP_AUTHORIZATION')
 
     if token is None:
         return Response({
             "authentication": ["This field is required."]
         }, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        auth = Token.objects.get(key=token)
+    except Token.DoesNotExist:
+        return Response({
+            "authentication": ["This key is invalid."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    if request.method == 'GET':
+        id = request.GET.get("id", None)
+        filter = request.GET.get("filter", None)
+        type = request.GET.get("type", None)
+
+        if id is not None and filter is None and type is None:
+
+            contributions = Contribution.objects.filter(
+                author=User.objects.get(username=request.GET.get('id'))).order_by(
+                '-date')
+            dto = []
+            for c in contributions:
+                dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+
+            serializer = ContributionDTOSerializer(dto, many=True)
+            return Response(serializer.data)
+
+        elif id is None and filter is not None and type is None:
+            return Response({
+                "id": ["This field is required."]
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        elif id is None and filter is None and type is not None:
+            return Response({
+                "id": ["This field is required."]
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        elif id is None and filter is None and type is None:
+            return Response({
+                "id": ["This field is required."]
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        else:
+            return Response({
+                "query": ["You must only provide one optional query parameter."]
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    else:
+        data = JSONParser().parse(request)
+        serializer = ContributionCreationDTOSerializer(data=data)
+        if serializer.is_valid():
+            c = Contribution()
+            c.title = serializer.data.get('title')
+            c.url = serializer.data.get('url')
+            c.author = auth.user
+            if not c.url:
+                c.text = serializer.data.get('text')
+                c.type = 'ask'
+            else:
+                match = Contribution.objects.filter(url=c.url).exists()
+                if match:
+                    return Response({
+                        "query": ["Is already defined in this url: /api/submissions/",
+                                  str(Contribution.objects.get(url=c.url).id)]
+                    }, status=status.HTTP_302_FOUND)
+
+            c.save()
+            if serializer.data.get('url') and serializer.data.get('text'):
+                com = Comment()
+                com.author = auth.user
+                com.text = serializer.data.get('text')
+                com.contribution = Contribution.objects.get(url=c.url)
+                com.save()
+            ud = UserDetail.objects.get(user=auth.user)
+            ud.karma = ud.karma + 1
+            ud.save()
+
+            serializer = ContributionDTOSerializer(c)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT'])
+def profile_api(request):
+    token = request.META.get('HTTP_AUTHORIZATION')
+
+    if token is None:
+        return Response({
+            "authentication": ["This field is required."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    client_id = request.GET.get("id", None)
+
+    if client_id is None:
+        return Response({
+            "id": ["This field is required."]
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         auth = Token.objects.get(key=token)

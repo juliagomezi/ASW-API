@@ -4,9 +4,9 @@ from . import views
 
 urlpatterns = [
 
-    path('api/users', views.profile_api, name='profile'),
+    path('api/users', views.profile_api, name='profile_api'),
     path('api/submissions/<int:id>/', views.newest, name='newest'),
-    path('api/submissions/', views.newest, name='newest'),
+    path('api/submissions/', views.submissions_api, name='submissions_api'),
     path('api/replies/<int:id>/vote', views.newest, name='newest'),
     path('api/replies/<int:id>/comment', views.newest, name='newest'),
     path('api/replies/<int:id>/', views.newest, name='newest'),
