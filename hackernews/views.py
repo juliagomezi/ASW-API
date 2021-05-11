@@ -10,8 +10,9 @@ from rest_framework.decorators import api_view
 from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 
-from hackernews.models import Comment, Contribution, UserDetail, SubmitForm, ContributionVote, CommentVote, DetailForm
-from hackernews.serializers import UserSerializer, DetailSerializer
+from hackernews.models import Comment, Contribution, UserDetail, SubmitForm, ContributionVote, CommentVote, DetailForm, \
+    UserDTO
+from hackernews.serializers import UserSerializer, DetailSerializer, UserDTOSerializer
 
 
 def vote(request):
@@ -184,9 +185,9 @@ def profile_api(request):
 
     try:
         username = request.GET.get('id')
-        #user = User.objects.select_related('userdetail').get(username=username)
         user = User.objects.get(username=username)
         userDetail = UserDetail.objects.get(user=user)
+        userDTO = UserDTO(user.username, user.email, userDetail.karma, userDetail.about, userDetail.created)
 
         if request.method == 'PUT':
             if auth.user != user:
@@ -195,15 +196,17 @@ def profile_api(request):
                 }, status=status.HTTP_401_UNAUTHORIZED)
 
             data = JSONParser().parse(request)
-            serializer = UserSerializer(data=data)
+            serializer = UserDTOSerializer(userDTO, data=data)
             if serializer.is_valid():
                 serializer.save()
+                userDetail.about = serializer.data.get('about')
+                userDetail.save()
                 return Response(serializer.data, status=status.HTTP_200_OK)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
         elif request.method == 'GET':
-            serializer = DetailSerializer(userDetail)
+            serializer = UserDTOSerializer(userDTO)
             return Response(serializer.data)
 
     except User.DoesNotExist:

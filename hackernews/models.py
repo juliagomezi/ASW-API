@@ -76,6 +76,7 @@ class Comment(models.Model):
         day_diff = diff.days
         return get_date_text(day_diff, second_diff)
 
+
 class ContributionVote(models.Model):
     user = models.ForeignKey(User, null=True, on_delete=models.SET_NULL)
     contribution = models.ForeignKey(Contribution, on_delete=models.CASCADE)
@@ -119,7 +120,7 @@ class DetailForm(forms.Form):
 
 
 class UserDetail(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_detail")
     karma = models.IntegerField(default=0)
     about = models.CharField(max_length=200, default="", blank=True)
     created = models.DateTimeField(default=datetime.now)
@@ -153,8 +154,7 @@ class UserDetail(models.Model):
         return get_date_text(day_diff, second_diff)
 
 
-def get_date_text(day_diff, second_diff ):
-
+def get_date_text(day_diff, second_diff):
     if day_diff < 0:
         return ''
 
@@ -181,3 +181,18 @@ def get_date_text(day_diff, second_diff ):
         return str(math.trunc(day_diff / 30)) + " months ago"
     return str(math.trunc(day_diff / 365)) + " years ago"
 
+
+class UserDTO(models.Model):
+    username = models.CharField(max_length=200)
+    email = models.CharField(max_length=200)
+    karma = models.IntegerField(default=0)
+    about = models.CharField(max_length=200, default="", blank=True)
+    created = models.DateTimeField(default=datetime.now)
+
+    def __init__(self, username, email, karma, about, created, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.username = username
+        self.email = email
+        self.karma = karma
+        self.about = about
+        self.created = created

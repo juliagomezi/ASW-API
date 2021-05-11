@@ -1,19 +1,13 @@
-from django.contrib.auth.models import User
-from drf_writable_nested import WritableNestedModelSerializer
 from rest_framework import serializers
 
-from hackernews.models import UserDetail
+from hackernews.models import UserDTO
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserDTOSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
-        fields = ('username', 'first_name', 'last_name', 'email')
+        model = UserDTO
+        fields = '__all__'
 
-
-class DetailSerializer(serializers.ModelSerializer):
-    user = UserSerializer(required=True)
-
-    class Meta:
-        model = UserDetail
-        fields = ('user', 'about',)
+    def update(self, instance, validated_data):
+        instance.about = validated_data.get('about', instance.about)
+        return instance
