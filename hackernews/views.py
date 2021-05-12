@@ -160,213 +160,6 @@ def ask(request):
     })
 
 
-@api_view(['GET', 'POST'])
-def submissions_id_api(request, id):
-    token = request.META.get('HTTP_AUTHORIZATION')
-
-    if token is None:
-        return Response({
-            "authentication": ["This field is required."]
-        }, status=status.HTTP_401_UNAUTHORIZED)
-
-    try:
-        auth = Token.objects.get(key=token)
-    except Token.DoesNotExist:
-        return Response({
-            "authentication": ["This key is invalid."]
-        }, status=status.HTTP_401_UNAUTHORIZED)
-
-    try:
-        #TODO falta els comments
-        c = Contribution.objects.get(id=id)
-        contribution_dto = ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date)
-        serializer = ContributionDTOSerializer(contribution_dto)
-        return Response(serializer.data)
-
-    except Contribution.DoesNotExist:
-        return Response({
-            "authentication": ["This id is not found."]
-        }, status=status.HTTP_404_NOT_FOUND)
-
-
-@api_view(['GET', 'POST'])
-def submissions_api(request):
-    token = request.META.get('HTTP_AUTHORIZATION')
-    # TODO falta els coments
-    if token is None:
-        return Response({
-            "authentication": ["This field is required."]
-        }, status=status.HTTP_401_UNAUTHORIZED)
-
-    try:
-        auth = Token.objects.get(key=token)
-    except Token.DoesNotExist:
-        return Response({
-            "authentication": ["This key is invalid."]
-        }, status=status.HTTP_401_UNAUTHORIZED)
-
-    if request.method == 'GET':
-        id = request.GET.get("id", None)
-        filter = request.GET.get("filter", None)
-        type = request.GET.get("type", None)
-
-        if id is not None and filter is None and type is None:
-
-            contributions = Contribution.objects.filter(
-                author=User.objects.get(username=request.GET.get('id'))).order_by(
-                '-date')
-            dto = []
-            for c in contributions:
-                dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
-
-            serializer = ContributionDTOSerializer(dto, many=True)
-            return Response(serializer.data)
-
-        elif id is None and filter is None and type is not None:
-
-            if filter == 'ask':
-                contributions = Contribution.objects.filter(type="ask").order_by('-points')
-
-                dto = []
-                for c in contributions:
-                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
-
-                serializer = ContributionDTOSerializer(dto, many=True)
-                return Response(serializer.data)
-
-            else:
-                return Response({
-                    "type": ["This field value must be ask."]
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-        elif id is None and filter is not None and type is None:
-
-            if filter == 'points':
-                contributions = Contribution.objects.order_by('-points')
-
-                dto = []
-                for c in contributions:
-                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
-
-                serializer = ContributionDTOSerializer(dto, many=True)
-                return Response(serializer.data)
-
-            elif filter == 'news':
-                contributions = Contribution.objects.all().order_by('-date')
-
-                dto = []
-                for c in contributions:
-                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
-
-                serializer = ContributionDTOSerializer(dto, many=True)
-                return Response(serializer.data)
-            else:
-                return Response({
-                    "filter": ["This field value must be ask."]
-                }, status=status.HTTP_400_BAD_REQUEST)
-
-        elif id is None and filter is None and type is None:
-            contributions = Contribution.objects.all().order_by('-points')
-            dto = []
-            for c in contributions:
-                dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
-
-            serializer = ContributionDTOSerializer(dto, many=True)
-            return Response(serializer.data)
-
-        else:
-            return Response({
-                "query": ["You must only provide one optional query parameter."]
-            }, status=status.HTTP_400_BAD_REQUEST)
-
-    else:
-        data = JSONParser().parse(request)
-        serializer = ContributionCreationDTOSerializer(data=data)
-        if serializer.is_valid():
-            c = Contribution()
-            c.title = serializer.data.get('title')
-            c.url = serializer.data.get('url')
-            c.author = auth.user
-            if not c.url:
-                c.text = serializer.data.get('text')
-                c.type = 'ask'
-            else:
-                match = Contribution.objects.filter(url=c.url).exists()
-                if match:
-                    return Response({
-                        "query": ["Is already defined in this url: /api/submissions/",
-                                  str(Contribution.objects.get(url=c.url).id)]
-                    }, status=status.HTTP_302_FOUND)
-
-            c.save()
-            if serializer.data.get('url') and serializer.data.get('text'):
-                com = Comment()
-                com.author = auth.user
-                com.text = serializer.data.get('text')
-                com.contribution = Contribution.objects.get(url=c.url)
-                com.save()
-            ud = UserDetail.objects.get(user=auth.user)
-            ud.karma = ud.karma + 1
-            ud.save()
-
-            serializer = ContributionDTOSerializer(c)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['GET', 'PUT'])
-def profile_api(request):
-    token = request.META.get('HTTP_AUTHORIZATION')
-
-    if token is None:
-        return Response({
-            "authentication": ["This field is required."]
-        }, status=status.HTTP_401_UNAUTHORIZED)
-
-    client_id = request.GET.get("id", None)
-
-    if client_id is None:
-        return Response({
-            "id": ["This field is required."]
-        }, status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        auth = Token.objects.get(key=token)
-    except Token.DoesNotExist:
-        return Response({
-            "authentication": ["This key is invalid."]
-        }, status=status.HTTP_401_UNAUTHORIZED)
-
-    try:
-        username = request.GET.get('id')
-        user = User.objects.get(username=username)
-        userDetail = UserDetail.objects.get(user=user)
-        userDTO = UserDTO(user.username, user.email, userDetail.karma, userDetail.about, userDetail.created)
-
-        if request.method == 'PUT':
-            if auth.user != user:
-                return Response({
-                    "Unauthorized": ["You're not allowed to modify this profile."]
-                }, status=status.HTTP_401_UNAUTHORIZED)
-
-            data = JSONParser().parse(request)
-            serializer = UserDTOSerializer(userDTO, data=data)
-            if serializer.is_valid():
-                serializer.save()
-                userDetail.about = serializer.data.get('about')
-                userDetail.save()
-                return Response(serializer.data, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-        elif request.method == 'GET':
-            serializer = UserDTOSerializer(userDTO)
-            return Response(serializer.data)
-
-    except User.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-
 def profile(request):
     username = request.GET.get('id')
     user = User.objects.get(username=username)
@@ -656,3 +449,242 @@ def get_karma(request):
         return UserDetail.objects.get(user=request.user).karma
 
     return None
+
+
+#API
+
+@api_view(['GET', 'POST'])
+def comments_id_api(request, id):
+    token = request.META.get('HTTP_AUTHORIZATION')
+
+    if token is None:
+        return Response({
+            "authentication": ["This field is required."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        auth = Token.objects.get(key=token)
+    except Token.DoesNotExist:
+        return Response({
+            "authentication": ["This key is invalid."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        #TODO falta els comments
+        c = Contribution.objects.get(id=id)
+        contribution_dto = ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date)
+        serializer = ContributionDTOSerializer(contribution_dto)
+        return Response(serializer.data)
+
+    except Contribution.DoesNotExist:
+        return Response({
+            "authentication": ["This id is not found."]
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+
+@api_view(['GET', 'POST'])
+def submissions_id_api(request, id):
+    token = request.META.get('HTTP_AUTHORIZATION')
+
+    if token is None:
+        return Response({
+            "authentication": ["This field is required."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        auth = Token.objects.get(key=token)
+    except Token.DoesNotExist:
+        return Response({
+            "authentication": ["This key is invalid."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        #TODO falta els comments
+        c = Contribution.objects.get(id=id)
+        contribution_dto = ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date)
+        serializer = ContributionDTOSerializer(contribution_dto)
+        return Response(serializer.data)
+
+    except Contribution.DoesNotExist:
+        return Response({
+            "authentication": ["This id is not found."]
+        }, status=status.HTTP_404_NOT_FOUND)
+
+
+@api_view(['GET', 'POST'])
+def submissions_api(request):
+    token = request.META.get('HTTP_AUTHORIZATION')
+    # TODO falta els coments
+    if token is None:
+        return Response({
+            "authentication": ["This field is required."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        auth = Token.objects.get(key=token)
+    except Token.DoesNotExist:
+        return Response({
+            "authentication": ["This key is invalid."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    if request.method == 'GET':
+        id = request.GET.get("id", None)
+        filter = request.GET.get("filter", None)
+        type = request.GET.get("type", None)
+
+        if id is not None and filter is None and type is None:
+
+            contributions = Contribution.objects.filter(
+                author=User.objects.get(username=request.GET.get('id'))).order_by(
+                '-date')
+            dto = []
+            for c in contributions:
+                dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+
+            serializer = ContributionDTOSerializer(dto, many=True)
+            return Response(serializer.data)
+
+        elif id is None and filter is None and type is not None:
+
+            if filter == 'ask':
+                contributions = Contribution.objects.filter(type="ask").order_by('-points')
+
+                dto = []
+                for c in contributions:
+                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+
+                serializer = ContributionDTOSerializer(dto, many=True)
+                return Response(serializer.data)
+
+            else:
+                return Response({
+                    "type": ["This field value must be ask."]
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        elif id is None and filter is not None and type is None:
+
+            if filter == 'points':
+                contributions = Contribution.objects.order_by('-points')
+
+                dto = []
+                for c in contributions:
+                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+
+                serializer = ContributionDTOSerializer(dto, many=True)
+                return Response(serializer.data)
+
+            elif filter == 'news':
+                contributions = Contribution.objects.all().order_by('-date')
+
+                dto = []
+                for c in contributions:
+                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+
+                serializer = ContributionDTOSerializer(dto, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({
+                    "filter": ["This field value must be ask."]
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        elif id is None and filter is None and type is None:
+            contributions = Contribution.objects.all().order_by('-points')
+            dto = []
+            for c in contributions:
+                dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+
+            serializer = ContributionDTOSerializer(dto, many=True)
+            return Response(serializer.data)
+
+        else:
+            return Response({
+                "query": ["You must only provide one optional query parameter."]
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+    else:
+        data = JSONParser().parse(request)
+        serializer = ContributionCreationDTOSerializer(data=data)
+        if serializer.is_valid():
+            c = Contribution()
+            c.title = serializer.data.get('title')
+            c.url = serializer.data.get('url')
+            c.author = auth.user
+            if not c.url:
+                c.text = serializer.data.get('text')
+                c.type = 'ask'
+            else:
+                match = Contribution.objects.filter(url=c.url).exists()
+                if match:
+                    return Response({
+                        "query": ["Is already defined in this url: /api/submissions/",
+                                  str(Contribution.objects.get(url=c.url).id)]
+                    }, status=status.HTTP_302_FOUND)
+
+            c.save()
+            if serializer.data.get('url') and serializer.data.get('text'):
+                com = Comment()
+                com.author = auth.user
+                com.text = serializer.data.get('text')
+                com.contribution = Contribution.objects.get(url=c.url)
+                com.save()
+            ud = UserDetail.objects.get(user=auth.user)
+            ud.karma = ud.karma + 1
+            ud.save()
+
+            serializer = ContributionDTOSerializer(c)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET', 'PUT'])
+def profile_api(request):
+    token = request.META.get('HTTP_AUTHORIZATION')
+
+    if token is None:
+        return Response({
+            "authentication": ["This field is required."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    client_id = request.GET.get("id", None)
+
+    if client_id is None:
+        return Response({
+            "id": ["This field is required."]
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        auth = Token.objects.get(key=token)
+    except Token.DoesNotExist:
+        return Response({
+            "authentication": ["This key is invalid."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        username = request.GET.get('id')
+        user = User.objects.get(username=username)
+        userDetail = UserDetail.objects.get(user=user)
+        userDTO = UserDTO(user.username, user.email, userDetail.karma, userDetail.about, userDetail.created)
+
+        if request.method == 'PUT':
+            if auth.user != user:
+                return Response({
+                    "Unauthorized": ["You're not allowed to modify this profile."]
+                }, status=status.HTTP_401_UNAUTHORIZED)
+
+            data = JSONParser().parse(request)
+            serializer = UserDTOSerializer(userDTO, data=data)
+            if serializer.is_valid():
+                serializer.save()
+                userDetail.about = serializer.data.get('about')
+                userDetail.save()
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+        elif request.method == 'GET':
+            serializer = UserDTOSerializer(userDTO)
+            return Response(serializer.data)
+
+    except User.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)

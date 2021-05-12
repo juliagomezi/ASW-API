@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from hackernews.models import UserDTO, ContributionDTO, ContributionCreationDTO
+from hackernews.models import UserDTO, ContributionDTO, ContributionCreationDTO, CommentCreationDTO, CommentDTO
 
 
 class UserDTOSerializer(serializers.ModelSerializer):
@@ -22,4 +22,16 @@ class ContributionDTOSerializer(serializers.ModelSerializer):
 class ContributionCreationDTOSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContributionCreationDTO
+        fields = '__all__'
+
+
+class CommentDTOSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentDTO
+        fields = '__all__'
+
+
+class CommentCreationDTOSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentCreationDTO
         fields = '__all__'
