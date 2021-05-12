@@ -1,0 +1,817 @@
+openapi: 3.0.1
+info:
+  version: 1.0.0
+  title: HackerBadNews API
+  description: "This is the Open API documentation for the REST API of our beloved website **HackerBadNews** deployed at <https://hackerbadnews.herokuapp.com/>.<br> All operations require authentication. API key can be found in your profile in the previous website."
+servers:
+  - url: 'https://asw-api-demo.herokuapp.com/'
+paths:
+  /comments/:
+    get:
+      tags:
+        - comments
+      summary: Provides all the Comments of the given author
+      operationId: getCommentsByAuthor
+      parameters:
+      - name: id
+        in: query
+        description: Username of the user
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentsList'
+        400:
+          description: 'Error: Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error400'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        404:
+          description: 'Error: Not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error404'
+      security:
+      - ApiKeyAuth: []
+  
+  /comments/{id}:
+    get:
+      tags:
+        - comments
+      summary: Returns a single Comment
+      operationId: getCommentById
+      parameters:
+      - name: id
+        in: path
+        description: ID of Comment to return
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        404:
+          description: 'Error: Not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error404'
+      security:
+      - ApiKeyAuth: []
+      
+    post:
+      tags:
+      - comments
+      summary: Reply to a Comment
+      operationId: replyToComment
+      parameters:
+      - name: id
+        in: path
+        description: ID of Comment to reply to
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Provide the content of the reply
+        content:
+          application/json:
+            schema:
+              required:
+              - text
+              type: object
+              properties:
+                text:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  example: 'This is a reply to a comment'
+        required: true
+      responses:
+        201:
+          description: Reply created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResult'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        400:
+          description: 'Error: Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error400'
+      security:
+      - ApiKeyAuth: []
+    
+  /comments/{id}/vote:
+    post:
+      tags:
+      - comments
+      summary: Votes a Comment
+      operationId: voteComment
+      parameters:
+      - name: id
+        in: path
+        description: ID of Comment to vote
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        404:
+          description: 'Error: Not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error404'
+      security:
+      - ApiKeyAuth: []
+      
+    delete:
+      tags:
+        - comments
+      summary: Unvotes a Comment
+      operationId: unvoteComment
+      parameters:
+        - name: id
+          in: path
+          description: ID of Comment to unvote
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comment'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        404:
+          description: 'Error: Not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error404'
+      security:
+      - ApiKeyAuth: []
+  
+  /comments/favourites:
+    get:
+      tags:
+        - comments
+      summary: Provide the favourite Comments of the user (only yours are visible to you)
+      operationId: getFavouriteComments
+      parameters:
+      - name: id
+        in: query
+        description: Username of the user
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Comments'
+        400:
+          description: 'Error: Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error400'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        404:
+          description: 'Error: Not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error404'
+      security:
+        - ApiKeyAuth: [ ]
+  
+  /submissions/:
+    get:
+      tags:
+        - contributions
+      summary: Returns all the Contributions, if there is more than one parameter specified request is not accepted
+      operationId: getAllContributions
+      parameters:
+      - name: id
+        in: path
+        description: Username of a User to see his Contributions
+        required: false
+        schema:
+          type: string
+      - name: type
+        in: query
+        description: If set to 'ask', only these type of Contributions are returned
+        required: false
+        schema:
+          type: string
+      - name: filter
+        in: query
+        description: Order criteria to return the Contributions [news, points]
+        required: false
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContributionsList'
+        400:
+        description: 'Error: Bad Request'
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResult'
+            examples:
+              errorExample:
+                $ref: '#/components/examples/error400'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        404:
+          description: 'Error: Not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error404'
+      security:
+      - ApiKeyAuth: []
+      
+    post:
+      tags:
+      - contributions
+      summary: Create a Contribution
+      operationId: AddContribution
+      requestBody:
+        description: Provide the content of the Contribution. Title and (url or text) is expected, if both url and text are provided text is added as a Comment
+        content:
+          application/json:
+            schema:
+              required:
+              - title
+              - url
+              - text
+              type: object
+              properties:
+                title:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  example: 'My new contribution'
+                url:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  example: 'https://hackerbadnews.herokuapp.com/'
+                text:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  example: 'My text'
+        required: true
+      responses:
+        201:
+          description: Contribution created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContributionResult'
+        302:
+          description: Url Contribution exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContributionExists'
+        400:
+          description: 'Error: Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error400'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+      security:
+      - ApiKeyAuth: []
+    
+  /submissions/favourites:
+    get:
+      tags:
+        - contributions
+      summary: Returns the favourite Contributions of a user (only yours are visible to you)
+      operationId: getFavouriteContributions
+      parameters:
+      - name: id
+        in: query
+        description: Username of user
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ContributionsList'
+        400:
+          description: 'Error: Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error400'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        404:
+          description: 'Error: Not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error404'
+      security:
+      - ApiKeyAuth: []
+    
+  /submissions/{id}/:
+    get:
+      tags:
+        - contributions
+      summary: Returns a single Contribution
+      operationId: getContributionById
+      parameters:
+      - name: id
+        in: path
+        description: ID of Contribution
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contribution'
+        400:
+          description: 'Error: Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error400'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        404:
+          description: 'Error: Not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error404'
+      security:
+      - ApiKeyAuth: []
+      
+    post:
+      tags:
+      - comments
+      summary: Comment a Contribution
+      operationId: commentContribution
+      parameters:
+      - name: id
+        in: path
+        description: ID of Contribution to Comment
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        description: Provide the content of the Comment
+        content:
+          application/json:
+            schema:
+              required:
+              - text
+              type: object
+              properties:
+                text:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  example: 'This is a comment to a contribution'
+        required: true
+      responses:
+        201:
+          description: Reply created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResult'
+        400:
+          description: 'Error: Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error400'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        404:
+          description: 'Error: Not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error404'
+      security:
+      - ApiKeyAuth: []
+      
+  /submissions/{id}/vote:
+    post:
+      tags:
+      - contributions
+      summary: Vote a Contribution
+      operationId: voteContribution
+      parameters:
+      - name: id
+        in: path
+        description: ID of Contribution to vote
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contribution'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        400:
+          description: 'Error: Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error400'
+        404:
+          description: 'Error: Not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error404'
+      security:
+        - ApiKeyAuth: [ ]
+        
+    delete:
+      tags:
+      - contributions
+      summary: Unvote a Contribution
+      operationId: unvoteContribution
+      parameters:
+      - name: id
+        in: path
+        description: ID of Contribution to unvote
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Contribution'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        400:
+          description: 'Error: Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error400'
+        404:
+          description: 'Error: Not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error404'
+      security:
+        - ApiKeyAuth: [ ]
+        
+  /users:
+    get:
+      tags:
+        - users
+      summary: Provide the user info
+      operationId: getUserInfo
+      parameters:
+      - name: id
+        in: query
+        description: Username of the user
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+        400:
+          description: 'Error: Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error400'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        404:
+          description: 'Error: Not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error404'
+      security:
+        - ApiKeyAuth: [ ]
+        
+    put:
+      tags:
+        - users
+      summary: Updates the user information
+      operationId: updateUserInfo
+      parameters:
+      - name: id
+        in: query
+        description: Username of the user
+        required: true
+        schema:
+          type: string
+      requestBody:
+        description: Provide the content of the update
+        content:
+          application/json:
+            schema:
+              required:
+              - username
+              - email
+              - karma
+              - about
+              - created
+              type: object
+              properties:
+                username:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  example: 'This is the username of the user'
+                email:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  example: 'This is the email of the user'
+                karma:
+                  type: integer
+                  default: 0
+                  example: 'This is the karma of the user'
+                about:
+                  type: string
+                  minLength: 1
+                  maxLength: 200
+                  example: 'This is the about information of the user'
+                created:
+                  type: date
+                  example: 'This is the creation date of the user'
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserInfo'
+        400:
+          description: 'Error: Bad Request'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error400'
+        401:
+          description: 'Error: Unauthorized'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error401'
+        404:
+          description: 'Error: Not found'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResult'
+              examples:
+                errorExample:
+                  $ref: '#/components/examples/error404'
+      security:
+        - ApiKeyAuth: [ ]
