@@ -229,7 +229,7 @@ class ContributionDTO(models.Model):
     points = models.IntegerField(default=1)
     author = models.CharField(max_length=200)
 
-    def __init__(self, id, type, points, author, url, text, date, *args, **kwargs):
+    def __init__(self, id, type, points, author, url, text, date, title, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = type
         self.id = id
@@ -238,6 +238,9 @@ class ContributionDTO(models.Model):
         self.date = date
         self.points = points
         self.author = author
+        self.title = title
+
+
 
 
 class CommentDTO(models.Model):
@@ -249,9 +252,9 @@ class CommentDTO(models.Model):
     date = models.DateTimeField(default=datetime.now, blank=True)
     contributionId = models.IntegerField(default=0)
     fatherId = models.IntegerField(default=0)
-   # replies = CommentDTO[]
+    #replies = CommentDTO[]
 
-    def __init__(self, id, level, author, text, votes, date, contributionId, fatherId, replies, *args, **kwargs):
+    def __init__(self, id, level, author, text, votes, date, contributionId, fatherId, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.id = id
         self.level = level
@@ -261,7 +264,6 @@ class CommentDTO(models.Model):
         self.date = date
         self.contributionId = contributionId
         self.fatherId = fatherId
-        self.replies = replies
 
 
 class CommentCreationDTO(models.Model):

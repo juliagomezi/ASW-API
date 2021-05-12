@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from hackernews.models import UserDTO, ContributionDTO, ContributionCreationDTO, CommentCreationDTO, CommentDTO
+from hackernews.models import UserDTO, ContributionDTO, ContributionCreationDTO, CommentCreationDTO, CommentDTO, Comment
 
 
 class UserDTOSerializer(serializers.ModelSerializer):
@@ -25,9 +25,15 @@ class ContributionCreationDTOSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-#No valen s'han de refer per fer un serialitzador recursiu
-class CommentDTOSerializer(serializers.Serializer):
-   # replies = CommentDTOSerializer(many = True)
+class RecursiveField(serializers.Serializer):
+    def to_representation(self, value):
+        serializer = self.parent.parent.__class__(value, context=self.context)
+        return serializer.data
+
+
+# No valen s'han de refer per fer un serialitzador recursiu
+class CommentDTOSerializer(serializers.ModelSerializer):
+   #  replies = RecursiveField(many = True)
 
     class Meta:
         model = CommentDTO
@@ -38,3 +44,6 @@ class CommentCreationDTOSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentCreationDTO
         fields = '__all__'
+
+
+

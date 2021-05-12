@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from hackernews.models import Comment, Contribution, UserDetail, SubmitForm, ContributionVote, CommentVote, DetailForm, \
     UserDTO, ContributionDTO, CommentDTO
 from hackernews.serializers import UserDTOSerializer, ContributionDTOSerializer, ContributionCreationDTOSerializer, \
-    CommentDTOSerializer
+    CommentDTOSerializer, CommentCreationDTOSerializer
 
 
 def vote(request):
@@ -471,16 +471,40 @@ def comments_id_api(request, id):
             "authentication": ["This key is invalid."]
         }, status=status.HTTP_401_UNAUTHORIZED)
 
-    try:
-        c = Comment.objects.get(id=id)
-        comment_dto = CommentDTO(c.id, c.level, c.author.username, c.text, c.votes, c.date, c.contribution.id, c.father.id)
-        serializer = CommentDTOSerializer(comment_dto)
-        return Response(serializer.data)
+    if request.method == 'GET':
+        try:
+            c = Comment.objects.get(id=id)
+            if c.father is None:
+                f = None
+            else:
+                f = c.father.id
 
-    except Comment.DoesNotExist:
-        return Response({
-            "authentication": ["This id is not found."]
-        }, status=status.HTTP_404_NOT_FOUND)
+            comment_dto = CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f)
+            serializer = CommentDTOSerializer(comment_dto)
+            return Response(serializer.data)
+
+        except Comment.DoesNotExist:
+            return Response({
+                "authentication": ["This id is not found."]
+            }, status=status.HTTP_404_NOT_FOUND)
+
+    elif request.method == 'POST':
+        data = JSONParser().parse(request)
+        serializer = CommentCreationDTOSerializer(data=data)
+        if serializer.is_valid():
+            father = Comment.objects.get(id=id)
+            comment = Comment()
+            comment.text = serializer.data.get('text')
+            comment.father = father
+            comment.level = father.level + 1
+            comment.contribution = father.contribution
+            comment.author = auth.user
+            comment.save()
+
+            serializer = CommentDTOSerializer(comment)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(['GET', 'POST'])
@@ -502,7 +526,7 @@ def submissions_id_api(request, id):
     try:
         # TODO falta els comments
         c = Contribution.objects.get(id=id)
-        contribution_dto = ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date)
+        contribution_dto = ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date, c.title)
         serializer = ContributionDTOSerializer(contribution_dto)
         return Response(serializer.data)
 
@@ -541,7 +565,7 @@ def submissions_api(request):
                 '-date')
             dto = []
             for c in contributions:
-                dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+                dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date, c.title))
 
             serializer = ContributionDTOSerializer(dto, many=True)
             return Response(serializer.data)
@@ -554,7 +578,7 @@ def submissions_api(request):
 
                 dto = []
                 for c in contributions:
-                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date, c.title))
 
                 serializer = ContributionDTOSerializer(dto, many=True)
                 return Response(serializer.data)
@@ -572,7 +596,7 @@ def submissions_api(request):
 
                 dto = []
                 for c in contributions:
-                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date, c.title))
 
                 serializer = ContributionDTOSerializer(dto, many=True)
                 return Response(serializer.data)
@@ -582,7 +606,7 @@ def submissions_api(request):
 
                 dto = []
                 for c in contributions:
-                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date, c.title))
 
                 serializer = ContributionDTOSerializer(dto, many=True)
                 return Response(serializer.data)
@@ -596,7 +620,7 @@ def submissions_api(request):
             contributions = Contribution.objects.all().order_by('-points')
             dto = []
             for c in contributions:
-                dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+                dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date, c.title))
 
             serializer = ContributionDTOSerializer(dto, many=True)
             return Response(serializer.data)
@@ -641,7 +665,7 @@ def submissions_api(request):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET','POST'])
-def item_fav_api(request):
+def submission_fav_api(request):
     token = request.META.get('HTTP_AUTHORIZATION')
     #aixo cal??
     if token is None:
@@ -676,14 +700,57 @@ def item_fav_api(request):
         votedcontributions = ContributionVote.objects.filter(user=User.objects.get(username=request.GET.get('id')))
         dto = []
         for c in votedcontributions:
-            dto.append(ContributionDTO(c.contribution.id, c.contribution.type, c.contribution.points, c.contribution.author.username, c.contribution.url, c.contribution.text, c.contribution.date))
+            dto.append(ContributionDTO(c.contribution.id, c.contribution.type, c.contribution.points, c.contribution.author.username, c.contribution.url, c.contribution.text, c.contribution.date, c.contribution.title))
 
         serializer = ContributionDTOSerializer(dto, many=True)
         return Response(serializer.data)
 
     #elif request.method == 'POST':
 
+@api_view(['GET', 'POST'])
+def comments_api(request) :
+    token = request.META.get('HTTP_AUTHORIZATION')
+    if token is None:
+        return Response({
+            "authentication": ["This field is required."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
 
+    try:
+        auth = Token.objects.get(key=token)
+    except Token.DoesNotExist:
+        return Response({
+            "authentication": ["This key is invalid."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    id = request.GET.get("id", None)
+
+    if id is None:
+        return Response({
+            "id": ["This field is required."]
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(username=id)
+    except User.DoesNotExist:
+        return Response({
+            "id": ["User does not exists."]
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        author = User.objects.get(username=id)
+        comments = Comment.objects.filter(author=author).order_by('level', '-date')
+        dto = []
+
+        for c in comments:
+            if c.father is None:
+                f = None
+            else:
+                f = c.father.id
+            dto.append(CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f))
+
+        serializer = CommentDTOSerializer(dto, many=True)
+
+        return Response(serializer.data)
 
 
 
