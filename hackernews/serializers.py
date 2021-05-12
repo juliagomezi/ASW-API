@@ -13,7 +13,20 @@ class UserDTOSerializer(serializers.ModelSerializer):
         return instance
 
 
+class CommentDTOSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CommentDTO
+        fields = ('id', 'level', 'author', 'text', 'votes', 'date', 'contributionId', 'fatherId', 'replies')
+
+    def get_fields(self):
+        fields = super(CommentDTOSerializer, self).get_fields()
+        fields['replies'] = CommentDTOSerializer(many=True)
+        return fields
+
+
 class ContributionDTOSerializer(serializers.ModelSerializer):
+    comments = CommentDTOSerializer(many=True)
+
     class Meta:
         model = ContributionDTO
         fields = '__all__'
@@ -25,25 +38,7 @@ class ContributionCreationDTOSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class RecursiveField(serializers.Serializer):
-    def to_representation(self, value):
-        serializer = self.parent.parent.__class__(value, context=self.context)
-        return serializer.data
-
-
-# No valen s'han de refer per fer un serialitzador recursiu
-class CommentDTOSerializer(serializers.ModelSerializer):
-   #  replies = RecursiveField(many = True)
-
-    class Meta:
-        model = CommentDTO
-        fields = '__all__'
-
-
 class CommentCreationDTOSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentCreationDTO
         fields = '__all__'
-
-
-

@@ -43,7 +43,7 @@ INSTALLED_APPS = [
     'hackernews.apps.HackernewsConfig',
     'rest_framework',
     'rest_framework.authtoken',
-
+    'drf_yasg',
     'allauth',  # <--
     'allauth.account',  # <--
     'allauth.socialaccount',  # <--
