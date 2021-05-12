@@ -642,7 +642,7 @@ def submissions_api(request):
         # obtenir les submissions tipus ask
         elif id is None and filter is None and type is not None:
 
-            if filter == 'ask':
+            if type == 'ask':
                 contributions = Contribution.objects.filter(type="ask").order_by('-points')
 
                 dto = []
