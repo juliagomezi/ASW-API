@@ -249,9 +249,9 @@ class CommentDTO(models.Model):
     date = models.DateTimeField(default=datetime.now, blank=True)
     contributionId = models.IntegerField(default=0)
     fatherId = models.IntegerField(default=0)
-#    replies = Comment()
+   # replies = CommentDTO[]
 
-    def __init__(self, id, level, author, text, votes, date, contributionId, fatherId, *args, **kwargs):
+    def __init__(self, id, level, author, text, votes, date, contributionId, fatherId, replies, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.id = id
         self.level = level
@@ -261,6 +261,7 @@ class CommentDTO(models.Model):
         self.date = date
         self.contributionId = contributionId
         self.fatherId = fatherId
+        self.replies = replies
 
 
 class CommentCreationDTO(models.Model):

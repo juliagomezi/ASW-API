@@ -11,8 +11,9 @@ from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
 
 from hackernews.models import Comment, Contribution, UserDetail, SubmitForm, ContributionVote, CommentVote, DetailForm, \
-    UserDTO, ContributionDTO
-from hackernews.serializers import UserDTOSerializer, ContributionDTOSerializer, ContributionCreationDTOSerializer
+    UserDTO, ContributionDTO, CommentDTO
+from hackernews.serializers import UserDTOSerializer, ContributionDTOSerializer, ContributionCreationDTOSerializer, \
+    CommentDTOSerializer
 
 
 def vote(request):
@@ -451,10 +452,11 @@ def get_karma(request):
     return None
 
 
-#API
+# API
 
 @api_view(['GET', 'POST'])
 def comments_id_api(request, id):
+
     token = request.META.get('HTTP_AUTHORIZATION')
 
     if token is None:
@@ -470,17 +472,15 @@ def comments_id_api(request, id):
         }, status=status.HTTP_401_UNAUTHORIZED)
 
     try:
-        #TODO falta els comments
-        c = Contribution.objects.get(id=id)
-        contribution_dto = ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date)
-        serializer = ContributionDTOSerializer(contribution_dto)
+        c = Comment.objects.get(id=id)
+        comment_dto = CommentDTO(c.id, c.level, c.author.username, c.text, c.votes, c.date, c.contribution.id, c.father.id)
+        serializer = CommentDTOSerializer(comment_dto)
         return Response(serializer.data)
 
-    except Contribution.DoesNotExist:
+    except Comment.DoesNotExist:
         return Response({
             "authentication": ["This id is not found."]
         }, status=status.HTTP_404_NOT_FOUND)
-
 
 
 @api_view(['GET', 'POST'])
@@ -500,7 +500,7 @@ def submissions_id_api(request, id):
         }, status=status.HTTP_401_UNAUTHORIZED)
 
     try:
-        #TODO falta els comments
+        # TODO falta els comments
         c = Contribution.objects.get(id=id)
         contribution_dto = ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date)
         serializer = ContributionDTOSerializer(contribution_dto)
@@ -646,19 +646,19 @@ def profile_api(request):
             "authentication": ["This field is required."]
         }, status=status.HTTP_401_UNAUTHORIZED)
 
-    client_id = request.GET.get("id", None)
-
-    if client_id is None:
-        return Response({
-            "id": ["This field is required."]
-        }, status=status.HTTP_400_BAD_REQUEST)
-
     try:
         auth = Token.objects.get(key=token)
     except Token.DoesNotExist:
         return Response({
             "authentication": ["This key is invalid."]
         }, status=status.HTTP_401_UNAUTHORIZED)
+
+    id = request.GET.get("id", None)
+
+    if id is None:
+        return Response({
+            "id": ["This field is required."]
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     try:
         username = request.GET.get('id')

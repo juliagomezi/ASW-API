@@ -25,7 +25,10 @@ class ContributionCreationDTOSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
-class CommentDTOSerializer(serializers.ModelSerializer):
+##No valen s'han de refer per fer un serialitzador recursiu
+class CommentDTOSerializer(serializers.Serializer):
+   # replies = CommentDTOSerializer(many = True)
+
     class Meta:
         model = CommentDTO
         fields = '__all__'
