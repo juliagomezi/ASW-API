@@ -25,3 +25,4 @@ sqlparse==0.4.1
 urllib3==1.26.4
 whitenoise==5.2.0
 drf-yasg
+django-cors-headers==3.7.0
