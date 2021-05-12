@@ -2,7 +2,7 @@ openapi: 3.0.1
 info:
   version: 1.0.0
   title: HackerBadNews API
-  description: "This is the Open API documentation for the REST API of our beloved website **HackerBadNews** deployed at <https://hackerbadnews.herokuapp.com/>.<br> All operations require authentication. API key can be found in your profile in the previous website."
+  description: "This is the Open API documentation for the REST API of our beloved website **HackerBadNews** deployed at <https://api-hackerbadnews.herokuapp.com/>.<br> All operations require authentication. API key can be found in your profile in the previous website."
 servers:
   - url: 'https://api-hackerbadnews.herokuapp.com/'
 paths:
