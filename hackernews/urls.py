@@ -5,7 +5,9 @@ from . import views
 urlpatterns = [
 
     path('api/users', views.profile_api, name='profile_api'),
-    path('api/submissions/<int:id>/', views.newest, name='newest'),
+    path('api/submissions/<int:id>/vote', views.submissions_id_api, name='submissions_id_api'),    path('api/submissions/<int:id>/', views.submissions_id_api, name='submissions_id_api'),
+    path('api/submissions/<int:id>/unvote', views.submissions_id_api, name='submissions_id_api'),
+    path('api/submissions/<int:id>/', views.submissions_id_api, name='submissions_id_api'),
     path('api/submissions/', views.submissions_api, name='submissions_api'),
     path('api/replies/<int:id>/vote', views.newest, name='newest'),
     path('api/replies/<int:id>/comment', views.newest, name='newest'),
