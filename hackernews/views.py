@@ -193,20 +193,57 @@ def submissions_api(request):
             serializer = ContributionDTOSerializer(dto, many=True)
             return Response(serializer.data)
 
-        elif id is None and filter is not None and type is None:
-            return Response({
-                "id": ["This field is required."]
-            }, status=status.HTTP_400_BAD_REQUEST)
-
         elif id is None and filter is None and type is not None:
-            return Response({
-                "id": ["This field is required."]
-            }, status=status.HTTP_400_BAD_REQUEST)
+
+            if filter == 'ask':
+                contributions = Contribution.objects.filter(type="ask").order_by('-points')
+
+                dto = []
+                for c in contributions:
+                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+
+                serializer = ContributionDTOSerializer(dto, many=True)
+                return Response(serializer.data)
+
+            else:
+                return Response({
+                    "type": ["This field value must be ask."]
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+        elif id is None and filter is not None and type is None:
+
+            if filter == 'points':
+                contributions = Contribution.objects.order_by('-points')
+
+                dto = []
+                for c in contributions:
+                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+
+                serializer = ContributionDTOSerializer(dto, many=True)
+                return Response(serializer.data)
+
+            elif filter == 'news':
+                contributions = Contribution.objects.all().order_by('-date')
+
+                dto = []
+                for c in contributions:
+                    dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+
+                serializer = ContributionDTOSerializer(dto, many=True)
+                return Response(serializer.data)
+            else:
+                return Response({
+                    "filter": ["This field value must be ask."]
+                }, status=status.HTTP_400_BAD_REQUEST)
 
         elif id is None and filter is None and type is None:
-            return Response({
-                "id": ["This field is required."]
-            }, status=status.HTTP_400_BAD_REQUEST)
+            contributions = Contribution.objects.all().order_by('-points')
+            dto = []
+            for c in contributions:
+                dto.append(ContributionDTO(c.id, c.type, c.points, c.author.username, c.url, c.text, c.date))
+
+            serializer = ContributionDTOSerializer(dto, many=True)
+            return Response(serializer.data)
 
         else:
             return Response({
