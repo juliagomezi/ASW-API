@@ -5,13 +5,11 @@ from . import views
 urlpatterns = [
 
     path('api/users', views.profile_api, name='profile_api'),
-    path('api/submissions/<int:id>/vote', views.submissions_id_api, name='submissions_id_api'),
-    path('api/submissions/<int:id>/unvote', views.submissions_id_api, name='submissions_id_api'),
+    path('api/submissions/<int:id>/vote', views.vote_contribution_api, name='vote_contribution_api'),
     path('api/submissions/<int:id>/', views.submissions_id_api, name='submissions_id_api'), #/
     path('api/submissions/favourites', views.submission_fav_api, name='item_fav_api'), #
     path('api/submissions', views.submissions_api, name='submissions_api'), #
-    path('api/comments/<int:id>/vote', views.newest, name='newest'),
-    path('api/comments/<int:id>/unvote', views.newest, name='newest'),
+    path('api/comments/<int:id>/vote', views.vote_comment_api, name='vote_comment_api'),
     path('api/comments/<int:id>/', views.comments_id_api, name='comments_id_api'),
     path('api/comments/', views.comments_api, name='comments_api'),
     path('newest/', views.newest, name='newest'),

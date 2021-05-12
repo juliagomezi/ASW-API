@@ -229,7 +229,7 @@ class ContributionDTO(models.Model):
     points = models.IntegerField(default=1)
     author = models.CharField(max_length=200)
 
-    def __init__(self, id, type, points, author, url, text, date, title, *args, **kwargs):
+    def __init__(self, id, title, type, points, author, url, text, date, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.type = type
         self.id = id
@@ -239,8 +239,6 @@ class ContributionDTO(models.Model):
         self.points = points
         self.author = author
         self.title = title
-
-
 
 
 class CommentDTO(models.Model):
