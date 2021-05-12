@@ -483,10 +483,10 @@ def comments_id_api(request, id):
             serializer = CommentDTOSerializer(comment_dto)
             return Response(serializer.data)
 
-    except Comment.DoesNotExist:
-        return Response({
-            "id": ["This id is not found."]
-        }, status=status.HTTP_404_NOT_FOUND)
+        except Comment.DoesNotExist:
+            return Response({
+                "id": ["This id is not found."]
+            }, status=status.HTTP_404_NOT_FOUND)
 
     elif request.method == 'POST':
         data = JSONParser().parse(request)
