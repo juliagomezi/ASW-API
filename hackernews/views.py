@@ -717,8 +717,7 @@ def submissions_api(request):
                 match = Contribution.objects.filter(url=c.url).exists()
                 if match:
                     return Response({
-                        "query": ["Is already defined in this url: /api/submissions/",
-                                  str(Contribution.objects.get(url=c.url).id)]
+                        "query": ["Is already defined in this url: /api/submissions/"+str(Contribution.objects.get(url=c.url).id)]
                     }, status=status.HTTP_302_FOUND)
 
             c.save()
