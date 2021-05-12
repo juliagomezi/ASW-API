@@ -495,21 +495,29 @@ def comments_id_api(request, id):
             }, status=status.HTTP_404_NOT_FOUND)
 
     elif request.method == 'POST':
-        data = JSONParser().parse(request)
-        serializer = CommentCreationDTOSerializer(data=data)
-        if serializer.is_valid():
-            father = Comment.objects.get(id=id)
-            comment = Comment()
-            comment.text = serializer.data.get('text')
-            comment.father = father
-            comment.level = father.level + 1
-            comment.contribution = father.contribution
-            comment.author = auth.user
-            comment.save()
+        try:
+            data = JSONParser().parse(request)
+            serializer = CommentCreationDTOSerializer(data=data)
+            if serializer.is_valid():
+                father = Comment.objects.get(id=id)
+                comment = Comment()
+                comment.text = serializer.data.get('text')
+                comment.father = father
+                comment.level = father.level + 1
+                comment.contribution = father.contribution
+                comment.author = auth.user
+                comment.save()
 
-            serializer = CommentDTOSerializer(comment)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                comment_dto = CommentDTO(comment.id, comment.level, comment.author, comment.text, comment.votes,
+                                         comment.date, comment.contribution.id, comment.father.id)
+                serializer = CommentDTOSerializer(comment_dto)
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        except Comment.DoesNotExist:
+            return Response({
+                "id": ["This id is not found."]
+            }, status=status.HTTP_404_NOT_FOUND)
 
 
 def order(i, father, id):
@@ -585,7 +593,8 @@ def submissions_id_api(request, id):
                 comment.contribution = contribution
                 comment.author = auth.user
                 comment.save()
-                comment_dto = CommentDTO(comment.id, comment.level, comment.author, comment.text, comment.votes, comment.date, comment.contribution.id, None)
+                comment_dto = CommentDTO(comment.id, comment.level, comment.author, comment.text, comment.votes,
+                                         comment.date, comment.contribution.id, None)
                 serializer = CommentDTOSerializer(comment_dto)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -729,8 +738,7 @@ def submissions_api(request):
 
 
 @api_view(['GET'])
-def submission_fav_api(request):
-
+def comments_fav_api(request):
     token = getToken(request)
 
     if token is None:
@@ -759,18 +767,60 @@ def submission_fav_api(request):
             "id": ["User does not exist."]
         }, status=status.HTTP_404_NOT_FOUND)
 
-    if request.method == 'GET':
-        votedcontributions = ContributionVote.objects.filter(user=User.objects.get(username=request.GET.get('id')))
-        dto = []
-        for c in votedcontributions:
-            dto.append(
-                ContributionDTO(c.contribution.id, c.contribution.title, c.contribution.type, c.contribution.points,
-                                c.contribution.author.username, c.contribution.url, c.contribution.text,
-                                c.contribution.date))
+    coments_dto = []
+    votedcomments = CommentVote.objects.filter(user=user)
 
-        serializer = ContributionDTOSerializer(dto, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
+    for c in votedcomments:
+        if c.father is None:
+            f = None
+        else:
+            f = c.father.id
+        coments_dto.append(CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f))
 
+    serializer = CommentDTOSerializer(coments_dto, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+def submission_fav_api(request):
+    token = getToken(request)
+
+    if token is None:
+        return Response({
+            "authentication": ["This field is required."]
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        auth = Token.objects.get(key=token)
+    except Token.DoesNotExist:
+        return Response({
+            "authentication": ["This key is invalid."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    id = request.GET.get("id", None)
+
+    if id is None:
+        return Response({
+            "id": ["This field is required."]
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(username=id)
+    except User.DoesNotExist:
+        return Response({
+            "id": ["User does not exist."]
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    votedcontributions = ContributionVote.objects.filter(user=User.objects.get(username=request.GET.get('id')))
+    dto = []
+    for c in votedcontributions:
+        dto.append(
+            ContributionDTO(c.contribution.id, c.contribution.title, c.contribution.type, c.contribution.points,
+                            c.contribution.author.username, c.contribution.url, c.contribution.text,
+                            c.contribution.date))
+
+    serializer = ContributionDTOSerializer(dto, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['GET'])
@@ -938,30 +988,25 @@ def vote_comment_api(request, id):
         c = Comment.objects.get(id=id)
         voted = CommentVote.objects.filter(user=auth.user, comment=c)
         if request.method == 'POST':
-            if voted:
-                return Response({
-                    "id": ["Comment identified by id has already been voted by this user"]
-                }, status=status.HTTP_302_FOUND)
-            else:
+            if not voted:
                 c.votes = c.votes + 1
                 c.save()
                 commentvote = CommentVote()
                 commentvote.user = auth.user
                 commentvote.comment = c
                 commentvote.save()
-                serializer = CommentDTOSerializer(c)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+
+            serializer = CommentDTOSerializer(c)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
         else:
-            if not voted:
-                return Response({
-                    "id": ["Comment identified by id has not been voted by this user"]
-                }, status=status.HTTP_302_FOUND)
-            else:
+            if voted:
                 c.votes = c.votes - 1
                 c.save()
                 voted.delete()
-                serializer = CommentDTOSerializer(c)
-                return Response(serializer.data, status=status.HTTP_200_OK)
+
+            serializer = CommentDTOSerializer(c)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
     except Comment.DoesNotExist:
         return Response({
