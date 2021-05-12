@@ -533,6 +533,7 @@ def submissions_api(request):
         filter = request.GET.get("filter", None)
         type = request.GET.get("type", None)
 
+        #obtenir les submissions d'un usuari concret
         if id is not None and filter is None and type is None:
 
             contributions = Contribution.objects.filter(
@@ -545,6 +546,7 @@ def submissions_api(request):
             serializer = ContributionDTOSerializer(dto, many=True)
             return Response(serializer.data)
 
+        #obtenir les submissions tipus ask
         elif id is None and filter is None and type is not None:
 
             if filter == 'ask':
@@ -562,6 +564,7 @@ def submissions_api(request):
                     "type": ["This field value must be ask."]
                 }, status=status.HTTP_400_BAD_REQUEST)
 
+        #obtenir totes les submissions ordenades per punts o data
         elif id is None and filter is not None and type is None:
 
             if filter == 'points':
@@ -588,6 +591,7 @@ def submissions_api(request):
                     "filter": ["This field value must be ask."]
                 }, status=status.HTTP_400_BAD_REQUEST)
 
+        #obtenir totes les submissions
         elif id is None and filter is None and type is None:
             contributions = Contribution.objects.all().order_by('-points')
             dto = []
@@ -635,6 +639,53 @@ def submissions_api(request):
             serializer = ContributionDTOSerializer(c)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET','POST'])
+def item_fav_api(request):
+    token = request.META.get('HTTP_AUTHORIZATION')
+    #aixo cal??
+    if token is None:
+        return Response({
+            "authentication": ["This field is required."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    try:
+        auth = Token.objects.get(key=token)
+    except Token.DoesNotExist:
+        return Response({
+            "authentication": ["This key is invalid."]
+        }, status=status.HTTP_401_UNAUTHORIZED)
+
+    id = request.GET.get("id", None)
+
+    if id is None:
+        return Response({
+            "id": ["This field is required."]
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        user = User.objects.get(username=id)
+    except User.DoesNotExist:
+        return Response({
+            "id": ["User does not exists."]
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        #creiem que no sha de posar, es pk surti el tick per votar
+        #votes = ContributionVote.objects.filter(user=request.user)
+        votedcontributions = ContributionVote.objects.filter(user=User.objects.get(username=request.GET.get('id')))
+        dto = []
+        for c in votedcontributions:
+            dto.append(ContributionDTO(c.contribution.id, c.contribution.type, c.contribution.points, c.contribution.author.username, c.contribution.url, c.contribution.text, c.contribution.date))
+
+        serializer = ContributionDTOSerializer(dto, many=True)
+        return Response(serializer.data)
+
+    #elif request.method == 'POST':
+
+
+
+
 
 
 @api_view(['GET', 'PUT'])
