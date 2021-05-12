@@ -4,10 +4,10 @@ info:
   title: HackerBadNews API
   description: "This is the Open API documentation for the REST API of our beloved website **HackerBadNews** deployed at <https://api-hackerbadnews.herokuapp.com/>.<br> All operations require authentication. API key can be found in your profile in the previous website."
 servers:
-  - url: 'https://api-hackerbadnews.herokuapp.com/'
+  - url: 'https://api-hackerbadnews.herokuapp.com/api'
 paths:
 
-  /api/comments/:
+  /comments/:
     get:
       tags:
         - comments
@@ -57,7 +57,7 @@ paths:
       security:
       - ApiKeyAuth: []
   
-  /api/comments/{id}:
+  /comments/{id}:
     get:
       tags:
         - comments
@@ -155,7 +155,7 @@ paths:
       security:
       - ApiKeyAuth: []
     
-  /api/comments/{id}/vote:
+  /comments/{id}/vote:
     post:
       tags:
       - comments
@@ -238,7 +238,7 @@ paths:
       security:
       - ApiKeyAuth: []
   
-  /api/comments/favourites:
+  /comments/favourites:
     get:
       tags:
         - comments
@@ -288,7 +288,7 @@ paths:
       security:
         - ApiKeyAuth: [ ]
   
-  /api/submissions/:
+  /submissions:
     get:
       tags:
         - contributions
@@ -416,7 +416,7 @@ paths:
       security:
       - ApiKeyAuth: []
     
-  /api/submissions/favourites:
+  /submissions/favourites:
     get:
       tags:
         - contributions
@@ -466,7 +466,7 @@ paths:
       security:
       - ApiKeyAuth: []
     
-  /api/submissions/{id}/:
+  /submissions/{id}/:
     get:
       tags:
         - contributions
@@ -582,7 +582,7 @@ paths:
       security:
       - ApiKeyAuth: []
       
-  /api/submissions/{id}/vote:
+  /submissions/{id}/vote:
     post:
       tags:
       - contributions
@@ -683,7 +683,7 @@ paths:
       security:
         - ApiKeyAuth: [ ]
         
-  /api/users:
+  /users:
     get:
       tags:
         - users
