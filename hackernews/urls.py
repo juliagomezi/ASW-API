@@ -5,13 +5,11 @@ from . import views
 urlpatterns = [
 
     path('api/users', views.profile_api, name='profile_api'),
-    path('api/submissions/<int:id>/vote', views.submissions_id_api, name='submissions_id_api'),
-    path('api/submissions/<int:id>/unvote', views.submissions_id_api, name='submissions_id_api'),
+    path('api/submissions/<int:id>/vote', views.vote_contribution_api, name='vote_contribution_api'),
     path('api/submissions/<int:id>/', views.submissions_id_api, name='submissions_id_api'),
     path('api/submissions/favourites', views.item_fav_api, name='item_fav_api'),
     path('api/submissions/', views.submissions_api, name='submissions_api'),
-    path('api/comments/<int:id>/vote', views.newest, name='newest'),
-    path('api/comments/<int:id>/comment', views.newest, name='newest'),
+    path('api/comments/<int:id>/vote', views.vote_comment_api, name='vote_comment_api'),
     path('api/comments/<int:id>/', views.comments_id_api, name='newest'),
     path('api/comments/', views.newest, name='newest'),
     path('newest/', views.newest, name='newest'),
@@ -33,4 +31,5 @@ urlpatterns = [
     path('unvotecomment/<int:id>', views.unvotecomment, name='unvotecomment'),
     path('unvote/<int:id>', views.unvote, name='unvote'),
     path('', views.index, name='index'),
+
 ]
