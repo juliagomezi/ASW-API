@@ -6,7 +6,7 @@ from hackernews.models import UserDTO, ContributionDTO, ContributionCreationDTO,
 class UserDTOSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserDTO
-        fields = '__all__'
+        exclude = ('id', )
 
     def update(self, instance, validated_data):
         instance.about = validated_data.get('about', instance.about)
