@@ -948,7 +948,7 @@ def vote_contribution_api(request, id):
 
     try:
         c = Contribution.objects.get(id=id)
-        voted = ContributionVote.objects.filter(user=auth.user, contribution=c)
+        voted = ContributionVote.objects.filter(user=User.objects.get(username=auth.user), contribution=c)
         if request.method == 'POST':
             if not voted:
                 c.points = c.points + 1
@@ -958,7 +958,10 @@ def vote_contribution_api(request, id):
                 contributionvote.contribution = c
                 contributionvote.save()
 
-            serializer = ContributionDTOSerializer(c)
+            dto = ContributionDTO(c.id, c.title, c.type, c.points,
+                                  c.author.username, c.url, c.text,
+                                  c.date)
+            serializer = ContributionDTOSerializer(dto)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         else:
@@ -967,7 +970,10 @@ def vote_contribution_api(request, id):
                 c.save()
                 voted.delete()
 
-            serializer = ContributionDTOSerializer(c)
+            dto = ContributionDTO(c.id, c.title, c.type, c.points,
+                                  c.author.username, c.url, c.text,
+                                  c.date)
+            serializer = ContributionDTOSerializer(dto)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
     except Contribution.DoesNotExist:
@@ -1004,7 +1010,13 @@ def vote_comment_api(request, id):
                 commentvote.comment = c
                 commentvote.save()
 
-            serializer = CommentDTOSerializer(c)
+            if c.father is None:
+                f = None
+            else:
+                f = c.father.id
+
+            comment_dto = CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f)
+            serializer = CommentDTOSerializer(comment_dto)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         else:
@@ -1013,7 +1025,13 @@ def vote_comment_api(request, id):
                 c.save()
                 voted.delete()
 
-            serializer = CommentDTOSerializer(c)
+            if c.father is None:
+                f = None
+            else:
+                f = c.father.id
+
+            comment_dto = CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f)
+            serializer = CommentDTOSerializer(comment_dto)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
     except Comment.DoesNotExist:
