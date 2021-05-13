@@ -708,11 +708,20 @@ def submissions_api(request):
         if serializer.is_valid():
             c = Contribution()
             c.title = serializer.data.get('title')
+            if not c.title:
+                return Response({
+                    "body": ["You must provide a title."]
+                }, status=status.HTTP_400_BAD_REQUEST)
             c.url = serializer.data.get('url')
             c.author = auth.user
             if not c.url:
                 c.text = serializer.data.get('text')
-                c.type = 'ask'
+                if not c.text:
+                    return Response({
+                        "body": ["You must provide an url or text attribute."]
+                    }, status=status.HTTP_400_BAD_REQUEST)
+                else:
+                    c.type = 'ask'
             else:
                 match = Contribution.objects.filter(url=c.url).exists()
                 if match:
