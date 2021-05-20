@@ -57,7 +57,7 @@ paths:
       security:
       - ApiKeyAuth: []
   
-  /comments/{id}:
+  /comments/{id}/:
     get:
       tags:
         - comments
@@ -242,7 +242,7 @@ paths:
     get:
       tags:
         - comments
-      summary: Provide the favourite Comments of the user (only yours are visible to you)
+      summary: Provide the favourite Comments of the user
       operationId: getFavouriteComments
       parameters:
       - name: id
@@ -420,7 +420,7 @@ paths:
     get:
       tags:
         - contributions
-      summary: Returns the favourite Contributions of a user (only yours are visible to you)
+      summary: Returns the favourite Contributions of a user
       operationId: getFavouriteContributions
       parameters:
       - name: id
@@ -762,16 +762,16 @@ paths:
                   type: string
                   minLength: 1
                   maxLength: 200
-                  example: 'This is the username of the user'
+                  example: 'My username'
                 email:
                   type: string
                   minLength: 1
                   maxLength: 200
-                  example: 'This is the email of the user'
+                  example: 'example@mail.com'
                 karma:
                   type: integer
                   default: 0
-                  example: 'This is the karma of the user'
+                  example: '20'
                 about:
                   type: string
                   minLength: 1
@@ -779,7 +779,7 @@ paths:
                   example: 'This is the about information of the user'
                 created:
                   type: string
-                  example: 'This is the creation date of the user'
+                  example: '2021-05-13T00:38:25+02:00'
       responses:
         200:
           description: Successful operation

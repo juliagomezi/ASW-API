@@ -779,11 +779,12 @@ def comments_fav_api(request):
     votedcomments = CommentVote.objects.filter(user=user)
 
     for c in votedcomments:
-        if c.father is None:
+        com = c.comment
+        if com.father is None:
             f = None
         else:
-            f = c.father.id
-        coments_dto.append(CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f))
+            f = com.father.id
+        coments_dto.append(CommentDTO(com.id, com.level, com.author, com.text, com.votes, com.date, com.contribution.id, f))
 
     serializer = CommentDTOSerializer(coments_dto, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
