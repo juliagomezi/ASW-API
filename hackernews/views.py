@@ -483,7 +483,7 @@ def comments_id_api(request, id):
             else:
                 f = c.father.id
 
-            comment_dto = CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f)
+            comment_dto = CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f, c.contribution.title)
             comment_dto.replies = order(c.level + 1, c, c.contribution.id)
             serializer = CommentDTOSerializer(comment_dto)
 
@@ -509,7 +509,7 @@ def comments_id_api(request, id):
                 comment.save()
 
                 comment_dto = CommentDTO(comment.id, comment.level, comment.author, comment.text, comment.votes,
-                                         comment.date, comment.contribution.id, comment.father.id)
+                                         comment.date, comment.contribution.id, comment.father.id, comment.contribution.title)
                 serializer = CommentDTOSerializer(comment_dto)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -528,7 +528,7 @@ def order(i, father, id):
     else:
         replies = []
         for child in children:
-            c_dto = CommentDTO(child.id, child.level, child.author, child.text, child.votes, child.date, id, father.id)
+            c_dto = CommentDTO(child.id, child.level, child.author, child.text, child.votes, child.date, id, father.id, child.contribution.title)
             replies.append(c_dto)
             c_dto.replies = order(i + 1, child, id)
 
@@ -563,7 +563,7 @@ def submissions_id_api(request, id):
                     f = None
                 else:
                     f = c.father.id
-                comment_dto = CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f)
+                comment_dto = CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f, c.contribution.title)
                 comment_dto.replies = order(c.level + 1, c, c.contribution.id)
                 comments.append(comment_dto)
 
@@ -594,7 +594,7 @@ def submissions_id_api(request, id):
                 comment.author = auth.user
                 comment.save()
                 comment_dto = CommentDTO(comment.id, comment.level, comment.author, comment.text, comment.votes,
-                                         comment.date, comment.contribution.id, None)
+                                         comment.date, comment.contribution.id, None, comment.contribution.title)
                 serializer = CommentDTOSerializer(comment_dto)
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -783,8 +783,8 @@ def comments_fav_api(request):
         if com.father is None:
             f = None
         else:
-            f = com.father.id
-        coments_dto.append(CommentDTO(com.id, com.level, com.author, com.text, com.votes, com.date, com.contribution.id, f))
+            f = c.father.id
+        coments_dto.append(CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f, c.contribution.title))
 
     serializer = CommentDTOSerializer(coments_dto, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -871,7 +871,7 @@ def comments_api(request):
                 f = None
             else:
                 f = c.father.id
-            dto.append(CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f))
+            dto.append(CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f, c.contribution.title))
 
         serializer = CommentDTOSerializer(dto, many=True)
 
