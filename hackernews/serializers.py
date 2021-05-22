@@ -16,7 +16,7 @@ class UserDTOSerializer(serializers.ModelSerializer):
 class CommentDTOSerializer(serializers.ModelSerializer):
     class Meta:
         model = CommentDTO
-        fields = ('id', 'level', 'author', 'text', 'votes', 'date', 'contributionId', 'fatherId', 'replies')
+        fields = ('id', 'level', 'author', 'text', 'votes', 'date', 'contributionId', 'contributionTitle', 'fatherId', 'replies')
 
     def get_fields(self):
         fields = super(CommentDTOSerializer, self).get_fields()
