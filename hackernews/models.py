@@ -251,7 +251,7 @@ class CommentDTO(models.Model):
     votes = models.IntegerField(default=0)
     date = models.DateTimeField(default=datetime.now, blank=True)
     contributionId = models.IntegerField(default=0)
-	contributionTitle = models.CharField(max_length=200)
+    contributionTitle = models.CharField(max_length=200)
     fatherId = models.IntegerField(default=0)
     replies = []
 
@@ -264,7 +264,7 @@ class CommentDTO(models.Model):
         self.votes = votes
         self.date = date
         self.contributionId = contributionId
-		self.contributionTitle = contributionTitle
+        self.contributionTitle = contributionTitle
         self.fatherId = fatherId
 
 
