@@ -783,8 +783,8 @@ def comments_fav_api(request):
         if com.father is None:
             f = None
         else:
-            f = c.father.id
-        coments_dto.append(CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f, c.contribution.title))
+            f = com.father.id
+        coments_dto.append(CommentDTO(com.id, com.level, com.author, com.text, com.votes, com.date, com.contribution.id, f, com.contribution.title))
 
     serializer = CommentDTOSerializer(coments_dto, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
@@ -1016,7 +1016,7 @@ def vote_comment_api(request, id):
             else:
                 f = c.father.id
 
-            comment_dto = CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f)
+            comment_dto = CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f, c.contribution.title)
             serializer = CommentDTOSerializer(comment_dto)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -1031,7 +1031,7 @@ def vote_comment_api(request, id):
             else:
                 f = c.father.id
 
-            comment_dto = CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f)
+            comment_dto = CommentDTO(c.id, c.level, c.author, c.text, c.votes, c.date, c.contribution.id, f, c.contribution.title)
             serializer = CommentDTOSerializer(comment_dto)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
