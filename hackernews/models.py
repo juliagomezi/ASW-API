@@ -240,7 +240,6 @@ class ContributionDTO(models.Model):
         self.date = date
         self.points = points
         self.author = author
-        self.title = title
 
 
 class CommentDTO(models.Model):

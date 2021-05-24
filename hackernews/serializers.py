@@ -32,6 +32,12 @@ class ContributionDTOSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 
+class ContributionDTOSerializerNoComments(serializers.ModelSerializer):
+    class Meta:
+        model = ContributionDTO
+        fields = '__all__'
+
+
 class ContributionCreationDTOSerializer(serializers.ModelSerializer):
     class Meta:
         model = ContributionCreationDTO

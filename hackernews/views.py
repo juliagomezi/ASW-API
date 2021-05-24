@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from hackernews.models import Comment, Contribution, UserDetail, SubmitForm, ContributionVote, CommentVote, DetailForm, \
     UserDTO, ContributionDTO, CommentDTO
 from hackernews.serializers import UserDTOSerializer, ContributionDTOSerializer, ContributionCreationDTOSerializer, \
-    CommentCreationDTOSerializer, CommentDTOSerializer
+    CommentCreationDTOSerializer, CommentDTOSerializer, ContributionDTOSerializerNoComments
 
 
 def vote(request):
@@ -740,8 +740,12 @@ def submissions_api(request):
             ud.karma = ud.karma + 1
             ud.save()
 
-            serializer = ContributionDTOSerializer(c)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            contribution_dto = ContributionDTO(c.id, c.title, c.type,
+                                               c.points, c.author.username,
+                                               c.url, c.text, c.date)
+
+            serializers = ContributionDTOSerializerNoComments(contribution_dto)
+            return Response(serializers.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
