@@ -632,9 +632,33 @@ def submissions_api(request):
             contributions = Contribution.objects.filter(
                 author=User.objects.get(username=request.GET.get('id'))).order_by(
                 '-date')
+
             dto = []
+
             for c in contributions:
-                dto.append(ContributionDTO(c.id, c.title, c.type, c.points, c.author.username, c.url, c.text, c.date))
+                contribution = Contribution.objects.get(id=c.id)
+                fathers = Comment.objects.filter(contribution=contribution).filter(
+                    level=0).order_by(
+                    '-votes')
+                comments = []
+
+                for com in fathers:
+                    if com.father is None:
+                        f = None
+                    else:
+                        f = com.father.id
+                    comment_dto = CommentDTO(com.id, com.level, com.author, com.text, com.votes, com.date,
+                                             com.contribution.id, f,
+                                             com.contribution.title)
+                    comment_dto.replies = order(com.level + 1, com, com.contribution.id)
+                    comments.append(comment_dto)
+
+                contribution_dto = ContributionDTO(contribution.id, contribution.title, contribution.type,
+                                                   contribution.points,
+                                                   contribution.author.username, contribution.url, contribution.text,
+                                                   contribution.date)
+                contribution_dto.comments = comments
+                dto.append(contribution_dto)
 
             serializer = ContributionDTOSerializer(dto, many=True)
             return Response(serializer.data)
@@ -647,8 +671,30 @@ def submissions_api(request):
 
                 dto = []
                 for c in contributions:
-                    dto.append(
-                        ContributionDTO(c.id, c.title, c.type, c.points, c.author.username, c.url, c.text, c.date))
+                    contribution = Contribution.objects.get(id=c.id)
+                    fathers = Comment.objects.filter(contribution=contribution).filter(
+                        level=0).order_by(
+                        '-votes')
+                    comments = []
+
+                    for com in fathers:
+                        if com.father is None:
+                            f = None
+                        else:
+                            f = com.father.id
+                        comment_dto = CommentDTO(com.id, com.level, com.author, com.text, com.votes, com.date,
+                                                 com.contribution.id, f,
+                                                 com.contribution.title)
+                        comment_dto.replies = order(com.level + 1, com, com.contribution.id)
+                        comments.append(comment_dto)
+
+                    contribution_dto = ContributionDTO(contribution.id, contribution.title, contribution.type,
+                                                       contribution.points,
+                                                       contribution.author.username, contribution.url,
+                                                       contribution.text,
+                                                       contribution.date)
+                    contribution_dto.comments = comments
+                    dto.append(contribution_dto)
 
                 serializer = ContributionDTOSerializer(dto, many=True)
                 return Response(serializer.data)
@@ -666,8 +712,30 @@ def submissions_api(request):
 
                 dto = []
                 for c in contributions:
-                    dto.append(
-                        ContributionDTO(c.id, c.title, c.type, c.points, c.author.username, c.url, c.text, c.date))
+                    contribution = Contribution.objects.get(id=c.id)
+                    fathers = Comment.objects.filter(contribution=contribution).filter(
+                        level=0).order_by(
+                        '-votes')
+                    comments = []
+
+                    for com in fathers:
+                        if com.father is None:
+                            f = None
+                        else:
+                            f = com.father.id
+                        comment_dto = CommentDTO(com.id, com.level, com.author, com.text, com.votes, com.date,
+                                                 com.contribution.id, f,
+                                                 com.contribution.title)
+                        comment_dto.replies = order(com.level + 1, com, com.contribution.id)
+                        comments.append(comment_dto)
+
+                    contribution_dto = ContributionDTO(contribution.id, contribution.title, contribution.type,
+                                                       contribution.points,
+                                                       contribution.author.username, contribution.url,
+                                                       contribution.text,
+                                                       contribution.date)
+                    contribution_dto.comments = comments
+                    dto.append(contribution_dto)
 
                 serializer = ContributionDTOSerializer(dto, many=True)
                 return Response(serializer.data)
@@ -677,8 +745,30 @@ def submissions_api(request):
 
                 dto = []
                 for c in contributions:
-                    dto.append(
-                        ContributionDTO(c.id, c.title, c.type, c.points, c.author.username, c.url, c.text, c.date))
+                    contribution = Contribution.objects.get(id=c.id)
+                    fathers = Comment.objects.filter(contribution=contribution).filter(
+                        level=0).order_by(
+                        '-votes')
+                    comments = []
+
+                    for com in fathers:
+                        if com.father is None:
+                            f = None
+                        else:
+                            f = com.father.id
+                        comment_dto = CommentDTO(com.id, com.level, com.author, com.text, com.votes, com.date,
+                                                 com.contribution.id, f,
+                                                 com.contribution.title)
+                        comment_dto.replies = order(com.level + 1, com, com.contribution.id)
+                        comments.append(comment_dto)
+
+                    contribution_dto = ContributionDTO(contribution.id, contribution.title, contribution.type,
+                                                       contribution.points,
+                                                       contribution.author.username, contribution.url,
+                                                       contribution.text,
+                                                       contribution.date)
+                    contribution_dto.comments = comments
+                    dto.append(contribution_dto)
 
                 serializer = ContributionDTOSerializer(dto, many=True)
                 return Response(serializer.data)
@@ -692,7 +782,29 @@ def submissions_api(request):
             contributions = Contribution.objects.all().order_by('-points')
             dto = []
             for c in contributions:
-                dto.append(ContributionDTO(c.id, c.title, c.type, c.points, c.author.username, c.url, c.text, c.date))
+                contribution = Contribution.objects.get(id=c.id)
+                fathers = Comment.objects.filter(contribution=contribution).filter(
+                    level=0).order_by(
+                    '-votes')
+                comments = []
+
+                for com in fathers:
+                    if com.father is None:
+                        f = None
+                    else:
+                        f = com.father.id
+                    comment_dto = CommentDTO(com.id, com.level, com.author, com.text, com.votes, com.date,
+                                             com.contribution.id, f,
+                                             com.contribution.title)
+                    comment_dto.replies = order(com.level + 1, com, com.contribution.id)
+                    comments.append(comment_dto)
+
+                contribution_dto = ContributionDTO(contribution.id, contribution.title, contribution.type,
+                                                   contribution.points,
+                                                   contribution.author.username, contribution.url, contribution.text,
+                                                   contribution.date)
+                contribution_dto.comments = comments
+                dto.append(contribution_dto)
 
             serializer = ContributionDTOSerializer(dto, many=True)
             return Response(serializer.data)
