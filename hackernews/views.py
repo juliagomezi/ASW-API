@@ -573,7 +573,7 @@ def submissions_id_api(request, id):
                                                contribution.date)
             contribution_dto.comments = comments
             serializer = ContributionDTOSerializer(contribution_dto)
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         except Contribution.DoesNotExist:
             return Response({
@@ -661,7 +661,7 @@ def submissions_api(request):
                 dto.append(contribution_dto)
 
             serializer = ContributionDTOSerializer(dto, many=True)
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         # obtenir les submissions tipus ask
         elif id is None and filter is None and type is not None:
@@ -697,7 +697,7 @@ def submissions_api(request):
                     dto.append(contribution_dto)
 
                 serializer = ContributionDTOSerializer(dto, many=True)
-                return Response(serializer.data)
+                return Response(serializer.data, status=status.HTTP_200_OK)
 
             else:
                 return Response({
@@ -738,7 +738,7 @@ def submissions_api(request):
                     dto.append(contribution_dto)
 
                 serializer = ContributionDTOSerializer(dto, many=True)
-                return Response(serializer.data)
+                return Response(serializer.data, status=status.HTTP_200_OK)
 
             elif filter == 'news':
                 contributions = Contribution.objects.all().order_by('-date')
@@ -771,7 +771,7 @@ def submissions_api(request):
                     dto.append(contribution_dto)
 
                 serializer = ContributionDTOSerializer(dto, many=True)
-                return Response(serializer.data)
+                return Response(serializer.data, status=status.HTTP_200_OK)
             else:
                 return Response({
                     "filter": ["This field value must be ask."]
@@ -807,7 +807,7 @@ def submissions_api(request):
                 dto.append(contribution_dto)
 
             serializer = ContributionDTOSerializer(dto, many=True)
-            return Response(serializer.data)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
         else:
             return Response({
@@ -938,11 +938,30 @@ def submission_fav_api(request):
 
     votedcontributions = ContributionVote.objects.filter(user=User.objects.get(username=request.GET.get('id')))
     dto = []
-    for c in votedcontributions:
-        dto.append(
-            ContributionDTO(c.contribution.id, c.contribution.title, c.contribution.type, c.contribution.points,
-                            c.contribution.author.username, c.contribution.url, c.contribution.text,
-                            c.contribution.date))
+    for c in contributions:
+        contribution = Contribution.objects.get(id=c.id)
+        fathers = Comment.objects.filter(contribution=contribution).filter(
+            level=0).order_by(
+            '-votes')
+        comments = []
+
+        for com in fathers:
+            if com.father is None:
+                f = None
+            else:
+                f = com.father.id
+            comment_dto = CommentDTO(com.id, com.level, com.author, com.text, com.votes, com.date,
+                                     com.contribution.id, f,
+                                     com.contribution.title)
+            comment_dto.replies = order(com.level + 1, com, com.contribution.id)
+            comments.append(comment_dto)
+
+        contribution_dto = ContributionDTO(contribution.id, contribution.title, contribution.type,
+                                           contribution.points,
+                                           contribution.author.username, contribution.url, contribution.text,
+                                           contribution.date)
+        contribution_dto.comments = comments
+        dto.append(contribution_dto)
 
     serializer = ContributionDTOSerializer(dto, many=True)
     return Response(serializer.data, status=status.HTTP_200_OK)
