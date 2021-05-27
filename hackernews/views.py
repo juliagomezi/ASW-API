@@ -653,6 +653,7 @@ def submissions_api(request):
                     comment_dto.replies = order(com.level + 1, com, com.contribution.id)
                     comments.append(comment_dto)
 
+
                 contribution_dto = ContributionDTO(contribution.id, contribution.title, contribution.type,
                                                    contribution.points,
                                                    contribution.author.username, contribution.url, contribution.text,
@@ -939,7 +940,7 @@ def submission_fav_api(request):
     votedcontributions = ContributionVote.objects.filter(user=User.objects.get(username=request.GET.get('id')))
     dto = []
     for c in votedcontributions:
-        contribution = Contribution.objects.get(id=c.id)
+        contribution = Contribution.objects.get(id=c.contribution.id)
         fathers = Comment.objects.filter(contribution=contribution).filter(
             level=0).order_by(
             '-votes')
