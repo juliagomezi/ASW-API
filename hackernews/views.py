@@ -938,7 +938,7 @@ def submission_fav_api(request):
 
     votedcontributions = ContributionVote.objects.filter(user=User.objects.get(username=request.GET.get('id')))
     dto = []
-    for c in contributions:
+    for c in votedcontributions:
         contribution = Contribution.objects.get(id=c.id)
         fathers = Comment.objects.filter(contribution=contribution).filter(
             level=0).order_by(
